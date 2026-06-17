@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.env
+.streamlit/secrets.toml
+*.xlsx
+Kalvium_Mentor_Bot_Briefing.*
+generate_briefing_docx.py
