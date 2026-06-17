@@ -258,35 +258,36 @@ For each topic provide:
 
 Focus on topics where author notes mention misconceptions or where the content is conceptually dense."""
 
-    elif srd_type == "assessment":
-        prompt = f"""Using the following course LLD data, create a **Readiness Assessment Bank** for a Subject Readiness Day bootcamp.
+    elif srd_type == "practice":
+        prompt = f"""Using the following course LLD data, create a **Practice & Self-Check Kit** for mentors preparing for a Subject Readiness Day.
 
 === COURSE: {course_name} ===
 {combined}
 === END COURSE DATA ===
 
-Create an assessment that is 1 BAR ABOVE student level:
+This is for MENTOR SELF-PREPARATION — not the actual assessment. Create materials that help mentors gauge their own readiness:
 
-## 📝 SRD Readiness Assessment
+## 🧪 Practice Self-Check Kit
 
-### Part A: Objective (45 minutes)
-Generate 15 MCQs covering all modules. Each MCQ should:
-- Test conceptual understanding, not rote memory
-- Be harder than what students would face
-- Include 4 options with one clearly correct answer
-- Cover the breadth of the course
+### Part A: Concept Check (Self-Test)
+Generate 10 conceptual questions covering all modules. For each question:
+- State the question clearly
+- Provide the answer immediately below
+- Add a 1-line explanation of WHY this is the answer
+- These should test understanding, not rote memory
 
-### Part B: Subjective (15 minutes)
-Provide 3 teach-back prompts:
-- "Explain [concept] to a student who has zero context, in under 5 minutes"
+### Part B: Explain-It-To-Me Prompts
+Provide 4 teach-back practice prompts:
+- "How would you explain [concept] to a student who has zero context?"
 - Each prompt should target a different module
+- For each, provide a model answer (2-3 sentences) the mentor can compare against
 
-### Scoring Rubric
-- 🟢 GREEN (Ready): ≥ 80% MCQ + clear, accurate teach-back
-- 🟡 AMBER (Conditional): 60-79% MCQ or partially clear teach-back
-- 🔴 RED (Not Ready): < 60% MCQ or inaccurate teach-back
+### Part C: Common Gotchas
+- List 5-8 tricky conceptual traps or frequently confused pairs from this course
+- For each, explain the correct understanding
 
-Base all questions on the actual course content from the LLD."""
+This is a STUDY AID — mentors should use this to identify their own gaps before the SRD.
+Base all content on the actual course from the LLD."""
 
     else:  # full playbook
         prompt = f"""Using the following course LLD data, create a complete **Subject Readiness Day (SRD) Playbook** for mentors.
@@ -313,10 +314,11 @@ Generate a full SRD playbook with these sections:
   - Clear analogy or worked example
   - 5-min teach-back prompt
 
-## 📝 Section 4: Readiness Assessment
-- 10 MCQs (1 bar above student level)
-- 2 teach-back prompts
-- Green/Amber/Red scoring rubric
+## 🧪 Section 4: Practice Self-Check
+- 8 concept-check questions with answers (for mentor self-study)
+- 3 teach-back practice prompts with model answers
+- 5 common gotchas / frequently confused pairs
+- NOTE: This is a study aid for mentors. The actual readiness assessment is conducted separately by L&D.
 
 ## 🎮 Section 5: Pedagogy Cheat Sheet
 - Best analogies for this course's concepts
@@ -328,8 +330,8 @@ Generate a full SRD playbook with these sections:
   - 9:00-10:30 Breadth Sweep
   - 10:45-12:30 Deep Dive #1
   - 1:30-3:00 Deep Dive #2 + Pedagogy
-  - 3:15-4:30 Assessment
-  - 4:30-5:00 Wrap-up
+  - 3:15-4:30 Practice session + Q&A
+  - 4:30-5:00 Wrap-up + self-assessment reflection
 
 IMPORTANT: Do NOT reproduce session flows from the LLD. Use learning objectives, outcomes, and author notes to build the playbook."""
 

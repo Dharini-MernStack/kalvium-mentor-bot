@@ -426,16 +426,16 @@ with tab_srd:
 
     srd_type = st.radio(
         "What do you want to generate?",
-        ["📋 Full SRD Playbook", "⏱️ Breadth Sweep Script", "🔬 Deep Dive Topics", "📝 Readiness Assessment"],
+        ["📋 Full SRD Playbook", "⏱️ Breadth Sweep Script", "🔬 Deep Dive Topics", "🧪 Practice Self-Check"],
         horizontal=True,
-        help="Full playbook includes all components. Or generate individual sections."
+        help="Full playbook includes all components. Or generate individual sections. Note: Actual readiness assessments are conducted separately by L&D — not generated here."
     )
 
     srd_type_map = {
         "📋 Full SRD Playbook": "full",
         "⏱️ Breadth Sweep Script": "breadth_sweep",
         "🔬 Deep Dive Topics": "deep_dive",
-        "📝 Readiness Assessment": "assessment",
+        "🧪 Practice Self-Check": "practice",
     }
 
     # Optional: select specific modules to include
@@ -473,7 +473,7 @@ with tab_srd:
 
     # Show cached results
     for key, label in [("srd_full", "Full Playbook"), ("srd_breadth_sweep", "Breadth Sweep"),
-                        ("srd_deep_dive", "Deep Dives"), ("srd_assessment", "Assessment")]:
+                        ("srd_deep_dive", "Deep Dives"), ("srd_practice", "Practice Self-Check")]:
         cached = st.session_state.get(key)
         if cached:
             with st.expander(f"📄 Previously Generated: {label}", expanded=False):
