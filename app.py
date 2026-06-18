@@ -577,8 +577,111 @@ with tab_readiness_map:
 
     st.markdown("---")
 
+    # What the Handouts Cover
+    st.markdown("### What the Handouts Cover")
+    st.markdown(
+        "Each training handout is a comprehensive, simplified reference document prepared by L&D "
+        "for every technical subject. It serves as the **primary self-study material** for mentors."
+    )
+
+    st.markdown("**Handout Structure (per subject)**")
+    handout_structure_df = pd.DataFrame([
+        ["1", "Course Overview", "What the course is about, learning outcomes, target audience, pre-requisites"],
+        ["2", "Full Course Map", "All modules listed with topics, sequencing, inter-module dependencies \u2014 the complete course at a glance"],
+        ["3", "Simplified Content Summary", "Each module's key concepts explained in simplified, mentor-friendly language \u2014 not full courseware, but a distilled version that captures the essence of what needs to be taught"],
+        ["4", "Pedagogy Guidelines", "How to teach this course \u2014 recommended teaching approach, lab conduct, common student misconceptions, tips for engagement, suggested analogies and examples"],
+        ["5", "Module 1 Deep Dive", "Detailed breakdown of Module 1: concepts, expected session flow, practice problems, key takeaways students must leave with"],
+        ["6", "Assessment Patterns", "Types of questions students will face, evaluation rubrics, how to prepare students for assessments"],
+        ["7", "Resources & References", "Links to platform content, additional reading, video references, and bot access instructions"],
+    ], columns=["#", "Section", "What It Covers"])
+    st.dataframe(handout_structure_df, use_container_width=True, hide_index=True)
+
+    st.markdown("**Format:** PDF document (printable) + available as downloadable resource on the Mentor Bot")
+
+    # Downloadable handout template
+    handout_template = """KALVIUM L&D — BREADTH-FIRST SWEEP TRAINING HANDOUT
+====================================================
+Subject: [Subject Name]
+Course Slug: [Slug]
+Prepared by: L&D Team
+Date: June 2026
+
+----------------------------------------------------
+1. COURSE OVERVIEW
+----------------------------------------------------
+- What the course is about:
+- Learning outcomes:
+- Target audience:
+- Pre-requisites:
+
+----------------------------------------------------
+2. FULL COURSE MAP
+----------------------------------------------------
+Module | Topics | Dependencies
+-------|--------|-------------
+M1     |        |
+M2     |        |
+M3     |        |
+M4     |        |
+M5     |        |
+
+----------------------------------------------------
+3. SIMPLIFIED CONTENT SUMMARY
+----------------------------------------------------
+Module 1:
+  Key concepts:
+  In simple terms:
+
+Module 2:
+  Key concepts:
+  In simple terms:
+
+(Continue for all modules)
+
+----------------------------------------------------
+4. PEDAGOGY GUIDELINES
+----------------------------------------------------
+- Recommended teaching approach:
+- Lab conduct expectations:
+- Common student misconceptions:
+- Tips for engagement:
+- Suggested analogies and examples:
+
+----------------------------------------------------
+5. MODULE 1 DEEP DIVE
+----------------------------------------------------
+- Core concepts:
+- Expected session flow:
+- Practice problems:
+- Key takeaways students must leave with:
+
+----------------------------------------------------
+6. ASSESSMENT PATTERNS
+----------------------------------------------------
+- Types of questions students will face:
+- Evaluation rubrics:
+- How to prepare students:
+
+----------------------------------------------------
+7. RESOURCES & REFERENCES
+----------------------------------------------------
+- Platform content links:
+- Additional reading:
+- Video references:
+- Mentor Bot access instructions:
+"""
+    st.download_button(
+        label="Download Handout Template (.txt)",
+        data=handout_template,
+        file_name="LnD_Handout_Template.txt",
+        mime="text/plain",
+        use_container_width=True,
+    )
+
+    st.markdown("---")
+
     #  Handout Delivery Schedule 
-    st.markdown("###  Handout Delivery Schedule (22–25 June 2026)")
+    st.markdown("### Handout Delivery Schedule (22\u201325 June 2026)")
     st.info("L&D delivers breadth-first sweep handouts sequentially. All handouts also available on this bot for download.")
 
     HANDOUT_SCHEDULE = {
