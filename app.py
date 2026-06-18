@@ -431,17 +431,11 @@ with tab_readiness_map:
 
         # Course snapshot
         st.markdown(f"**Course:** {rm_course_name}")
-        snap_cols = st.columns(3)
+        snap_cols = st.columns(2)
         with snap_cols[0]:
             st.metric("Modules", len(rm_modules))
         with snap_cols[1]:
             st.metric("Total LUs", len(rm_df))
-        with snap_cols[2]:
-            if "completion_status" in rm_df.columns:
-                pending = rm_df["completion_status"].astype(str).str.lower().str.contains("pending").sum()
-                st.metric("Completed", f"{len(rm_df) - pending}/{len(rm_df)}")
-            else:
-                st.metric("Completed", "N/A")
 
         # Show what the guide will contain
         with st.expander("What this guide covers", expanded=False):
