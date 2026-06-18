@@ -10,7 +10,8 @@ from lld_parser import parse_lld, get_modules, get_lus_for_module, lu_to_text, d
 from rag_engine import RAGEngine
 from llm_engine import (
     configure_gemini, configure_grok, configure_openai, get_active_provider,
-    get_gemini_response, generate_module_insights, generate_lu_breakdown, generate_course_playbook
+    get_gemini_response, generate_module_insights, generate_lu_breakdown,
+    generate_subject_readiness_map, generate_course_playbook
 )
 
 #  Page Config 
@@ -411,422 +412,101 @@ with tab_lu_explorer:
                 st.markdown(cached_lu)
 
 
+
 #  Tab 4: Subject Readiness Map 
 with tab_readiness_map:
-    st.subheader(" Subject Readiness Map — Early-Start Campuses")
-    st.caption("L&D handout delivery schedule, campus-subject mapping, buddy mentor likelihood, and mentor classification framework.")
-
-    #  Campus-Subject Overview 
-    st.markdown("###  Campus Start Dates & Technical Subject Count")
-
-    CAMPUS_DATA = {
-        "TAU": {
-            "full_name": "The Apollo University",
-            "start_date": "1st July 2026",
-            "semesters": "Sem 5, Sem 7",
-            "program": "SPE",
-            "subjects": {
-                "Sem 5": [
-                    ("Computer Organisation & Architecture", "coa4_v3", "Completely New", "Low"),
-                    ("Design and Analysis of Algorithms", "daa5_v3", "Completely New", "Low"),
-                    ("Formal Language and Automata Theory", "flat_spe5_v1", "Minor Revamp", "High"),
-                    ("Simulated Work Sem 5/7", "sw_sem57_2026", "Completely New", "Low"),
-                ],
-                "Sem 7": [
-                    ("Cloud Computing", "cloudcom5_v1", "Completely New", "Low"),
-                    ("System Design", "sys_des5_v1", "Completely New", "Low"),
-                    ("Simulated Work Sem 5/7", "sw_sem57_2026", "Completely New", "Low"),
-                ],
-            },
-            "total": 7,
-            "buddy_likelihood": "Low (mostly new courses, 1 revamp — FLAT)",
-        },
-        "SGT": {
-            "full_name": "SGT University",
-            "start_date": "1st July 2026",
-            "semesters": "Sem 3",
-            "program": "SPE & AIFT",
-            "subjects": {
-                "Sem 3": [
-                    ("Advanced Database Systems (Theory)", "advdbtheory3_v2", "Completely New", "Medium"),
-                    ("Advanced Database Systems (Lab)", "advdblab3_v2", "Completely New", "Medium"),
-                    ("Elements of AI — Building AI (Theory)", "elements_ai_theory3_v2", "Completely New", "Low"),
-                    ("Elements of AI — Building AI (Lab)", "elements_ai_lab2_v2", "Completely New", "Low"),
-                    ("Full Stack Web Development (Theory)", "fswdtheory4_v2", "Completely New", "Low"),
-                    ("Full Stack Web Development (Lab)", "fswdlab6_v2", "Completely New", "Low"),
-                    ("Object Oriented Programming (Theory)", "ooptheory3_v2", "Completely New", "Medium"),
-                    ("Object Oriented Programming (Lab)", "ooplab2_v2", "Completely New", "Medium"),
-                    ("Database Management Systems (Theory)", "dbmstheory_spe3_v2", "Minor Revamp", "High"),
-                    ("Database Management Systems (Lab)", "dbmslab_spe2_v2", "Minor Revamp", "High"),
-                    ("Simulated Work Sem 3", "sw_sem3_2026", "Completely New", "Low"),
-                ],
-            },
-            "total": 11,
-            "buddy_likelihood": "Low-Medium (2 revamp subjects — DBMS)",
-        },
-        "AMET": {
-            "full_name": "AMET University",
-            "start_date": "1st July 2026",
-            "semesters": "Sem 3, Sem 5",
-            "program": "AI & DS, AI & ML, Cybersecurity",
-            "subjects": {
-                "Sem 3": [
-                    ("Computer Organisation & Architecture", "coa4_v3", "Completely New", "Medium"),
-                    ("UI and UX Design for CSE", "uiux5_v3", "Completely New", "Low"),
-                    ("Operating Systems", "os5_v2", "Major Revamp", "High"),
-                    ("Coding Skills for Placements — 1", "coding_skills2_v1", "Completely New", "Low"),
-                ],
-                "Sem 5": [
-                    ("Linux Administration", "linux_administration_5_v1", "Minor Revamp", "High"),
-                    ("Data Structures & Algorithms 2 (Theory)", "dsa2theory3_v1", "Minor Revamp", "High"),
-                    ("Data Structures & Algorithms 2 (Lab)", "dsa2lab2_v1", "Minor Revamp", "High"),
-                    ("Advanced Database Systems", "advdb6_v2", "Completely New", "Medium"),
-                    ("Coding Skills for Placements — 1", "coding_skills2_v1", "Completely New", "Low"),
-                    ("Work Integration", "projtrack_mern_lvl1", "Completely New", "Low"),
-                    ("Introduction to Data Science", "intro_ds5_v1", "Minor Revamp", "High"),
-                    ("Machine Learning", "ml5_v1", "Completely New", "Low"),
-                    ("Malware Analysis", "malware_analysis5_v1", "Completely New", "Low"),
-                ],
-            },
-            "total": 13,
-            "buddy_likelihood": "Medium (5 revamp subjects — OS, DSA2, Linux, DBMS, Intro DS)",
-        },
-        "MIT": {
-            "full_name": "MIT ADT University",
-            "start_date": "1st July 2026",
-            "semesters": "Sem 3, Sem 5, Sem 7",
-            "program": "SPE",
-            "subjects": {
-                "Sem 3": [
-                    ("Database Management Systems (Theory)", "dbmstheory_spe3_v2", "Minor Revamp", "High"),
-                    ("Database Management Systems (Lab)", "dbmslab_spe2_v2", "Minor Revamp", "High"),
-                    ("Object Oriented Programming (Theory)", "ooptheory3_v2", "Completely New", "Medium"),
-                    ("Object Oriented Programming (Lab)", "ooplab2_v2", "Completely New", "Medium"),
-                    ("Simulated Work Sem 3", "sw_sem3_2026", "Completely New", "Low"),
-                ],
-                "Sem 5": [
-                    ("Computer Organisation & Architecture", "coa4_v3", "Completely New", "Medium"),
-                    ("Design and Analysis of Algorithms (Theory)", "daatheory3_v2", "Completely New", "Low"),
-                    ("Design and Analysis of Algorithms (Lab)", "daalab2_v2", "Completely New", "Low"),
-                    ("DevOps Foundations", "devops5_v1", "Completely New", "Low"),
-                    ("Simulated Work Sem 5/7", "sw_sem57_2026", "Completely New", "Low"),
-                ],
-                "Sem 7": [
-                    ("Cloud Computing", "cloudcom5_v1", "Completely New", "Low"),
-                    ("System Design", "sys_des5_v1", "Completely New", "Low"),
-                    ("Simulated Work Sem 5/7", "sw_sem57_2026", "Completely New", "Low"),
-                ],
-            },
-            "total": 13,
-            "buddy_likelihood": "Low-Medium (2 revamp — DBMS)",
-        },
-        "VELS": {
-            "full_name": "Vels University",
-            "start_date": "2nd July 2026",
-            "semesters": "Sem 3, Sem 5, Sem 7",
-            "program": "SPE",
-            "subjects": {
-                "Sem 3": [
-                    ("Database Management Systems (Theory)", "dbmstheory_spe3_v2", "Minor Revamp", "High"),
-                    ("Database Management Systems (Lab)", "dbmslab_spe2_v2", "Minor Revamp", "High"),
-                    ("Object Oriented Programming (Theory)", "ooptheory3_v2", "Completely New", "Medium"),
-                    ("Object Oriented Programming (Lab)", "ooplab2_v2", "Completely New", "Medium"),
-                    ("Simulated Work Sem 3", "sw_sem3_2026", "Completely New", "Low"),
-                ],
-                "Sem 5": [
-                    ("Computer Organisation & Architecture", "coa4_v3", "Completely New", "Medium"),
-                    ("Design and Analysis of Algorithms (Theory)", "daatheory3_v2", "Completely New", "Low"),
-                    ("Design and Analysis of Algorithms (Lab)", "daalab2_v2", "Completely New", "Low"),
-                    ("Formal Language and Automata Theory", "flat_spe5_v1", "Minor Revamp", "High"),
-                    ("Simulated Work Sem 5/7", "sw_sem57_2026", "Completely New", "Low"),
-                ],
-                "Sem 7": [
-                    ("Distributed Systems", "distributed_systems5_v1", "Completely New", "Low"),
-                    ("System Design", "sys_des5_v1", "Completely New", "Low"),
-                    ("Simulated Work Sem 5/7", "sw_sem57_2026", "Completely New", "Low"),
-                ],
-            },
-            "total": 13,
-            "buddy_likelihood": "Low-Medium (3 revamp — DBMS, FLAT)",
-        },
-    }
-
-    # Summary cards
-    campus_cols = st.columns(5)
-    for col, (code, info) in zip(campus_cols, CAMPUS_DATA.items()):
-        with col:
-            st.markdown(f"""
-            <div class="stat-box">
-                <h3>{info['total']}</h3>
-                <p><strong>{code}</strong></p>
-                <p style="font-size:0.75rem; color:#999;">{info['start_date']}<br>{info['semesters']}</p>
-            </div>
-            """, unsafe_allow_html=True)
-
-    st.markdown("---")
-
-    #  Expandable campus details 
-    st.markdown("###  Campus-wise Subject Details")
-    for code, info in CAMPUS_DATA.items():
-        with st.expander(f"**{code} — {info['full_name']}**  |  {info['start_date']}  |  {info['total']} subjects  |  Buddy: {info['buddy_likelihood']}", expanded=False):
-            st.markdown(f"**Program:** {info['program']}  |  **Semesters:** {info['semesters']}")
-            for sem, subjects in info["subjects"].items():
-                st.markdown(f"**{sem}** ({len(subjects)} subjects)")
-                sem_df = pd.DataFrame(subjects, columns=["Subject", "Course Slug", "Nature", "Buddy Likelihood"])
-                st.dataframe(sem_df, use_container_width=True, hide_index=True)
-
-    st.markdown("---")
-
-    # What the Handouts Cover
-    st.markdown("### What the Handouts Cover")
-    st.markdown(
-        "Each training handout is a comprehensive, simplified reference document prepared by L&D "
-        "for every technical subject. It serves as the **primary self-study material** for mentors."
+    st.subheader("Subject Readiness Map")
+    st.caption(
+        "Upload an LLD and generate a complete mentor preparation guide for the course. "
+        "Covers course overview, full module map, simplified content, pedagogy tips, "
+        "Module 1 deep dive, and assessment patterns -- all in one downloadable guide."
     )
 
-    st.markdown("**Handout Structure (per subject)**")
-    handout_structure_df = pd.DataFrame([
-        ["1", "Course Overview", "What the course is about, learning outcomes, target audience, pre-requisites"],
-        ["2", "Full Course Map", "All modules listed with topics, sequencing, inter-module dependencies \u2014 the complete course at a glance"],
-        ["3", "Simplified Content Summary", "Each module's key concepts explained in simplified, mentor-friendly language \u2014 not full courseware, but a distilled version that captures the essence of what needs to be taught"],
-        ["4", "Pedagogy Guidelines", "How to teach this course \u2014 recommended teaching approach, lab conduct, common student misconceptions, tips for engagement, suggested analogies and examples"],
-        ["5", "Module 1 Deep Dive", "Detailed breakdown of Module 1: concepts, expected session flow, practice problems, key takeaways students must leave with"],
-        ["6", "Assessment Patterns", "Types of questions students will face, evaluation rubrics, how to prepare students for assessments"],
-        ["7", "Resources & References", "Links to platform content, additional reading, video references, and bot access instructions"],
-    ], columns=["#", "Section", "What It Covers"])
-    st.dataframe(handout_structure_df, use_container_width=True, hide_index=True)
+    if st.session_state.lld_data is None:
+        st.info("Please upload an LLD in the sidebar to generate a Subject Readiness Map.")
+    else:
+        rm_df = st.session_state.lld_data
+        rm_modules = get_modules(rm_df)
+        rm_course_name = course_info.get('name', st.session_state.selected_course or 'Course')
 
-    st.markdown("**Format:** PDF document (printable) + available as downloadable resource on the Mentor Bot")
+        # Course snapshot
+        st.markdown(f"**Course:** {rm_course_name}")
+        snap_cols = st.columns(3)
+        with snap_cols[0]:
+            st.metric("Modules", len(rm_modules))
+        with snap_cols[1]:
+            st.metric("Total LUs", len(rm_df))
+        with snap_cols[2]:
+            if "completion_status" in rm_df.columns:
+                pending = rm_df["completion_status"].astype(str).str.lower().str.contains("pending").sum()
+                st.metric("Completed", f"{len(rm_df) - pending}/{len(rm_df)}")
+            else:
+                st.metric("Completed", "N/A")
 
-    # Downloadable handout template
-    handout_template = """KALVIUM L&D — BREADTH-FIRST SWEEP TRAINING HANDOUT
-====================================================
-Subject: [Subject Name]
-Course Slug: [Slug]
-Prepared by: L&D Team
-Date: June 2026
+        # Show what the guide will contain
+        with st.expander("What this guide covers", expanded=False):
+            st.markdown("""
+| Section | What It Covers |
+|---|---|
+| **1. Course Overview** | What the course is about, learning outcomes, target audience, pre-requisites |
+| **2. Full Course Map** | All modules listed with topics, sequencing, inter-module dependencies |
+| **3. Simplified Content Summary** | Each module's key concepts in simplified, mentor-friendly language |
+| **4. Pedagogy Guidelines** | Teaching approach, lab conduct, common misconceptions, engagement tips, analogies |
+| **5. Module 1 Deep Dive** | Concepts, session flow, practice problems, key takeaways for Module 1 |
+| **6. Assessment Patterns** | Question types, evaluation rubrics, how to prepare students |
+""")
 
-----------------------------------------------------
-1. COURSE OVERVIEW
-----------------------------------------------------
-- What the course is about:
-- Learning outcomes:
-- Target audience:
-- Pre-requisites:
+        # Module list preview
+        with st.expander("Modules in this course", expanded=False):
+            for i, mod in enumerate(rm_modules, 1):
+                mod_lu_count = len(get_lus_for_module(rm_df, mod))
+                st.markdown(f"{i}. **{mod}** ({mod_lu_count} LUs)")
 
-----------------------------------------------------
-2. FULL COURSE MAP
-----------------------------------------------------
-Module | Topics | Dependencies
--------|--------|-------------
-M1     |        |
-M2     |        |
-M3     |        |
-M4     |        |
-M5     |        |
+        st.markdown("---")
 
-----------------------------------------------------
-3. SIMPLIFIED CONTENT SUMMARY
-----------------------------------------------------
-Module 1:
-  Key concepts:
-  In simple terms:
+        # Generate button
+        if st.button("Generate Subject Readiness Map", key="gen_readiness_map", type="primary", use_container_width=True):
+            with st.spinner(f"Generating readiness map for {rm_course_name}... This may take 30-60 seconds."):
+                all_chunks = st.session_state.rag_engine.chunks
+                if not all_chunks:
+                    all_chunks = dataframe_to_chunks(rm_df)
 
-Module 2:
-  Key concepts:
-  In simple terms:
+                readiness_map = generate_subject_readiness_map(rm_course_name, all_chunks)
+                st.session_state["readiness_map_content"] = readiness_map
+                st.session_state["readiness_map_course"] = rm_course_name
 
-(Continue for all modules)
+        # Display generated map
+        rm_content = st.session_state.get("readiness_map_content")
+        if rm_content:
+            st.markdown("---")
+            st.markdown(rm_content)
 
-----------------------------------------------------
-4. PEDAGOGY GUIDELINES
-----------------------------------------------------
-- Recommended teaching approach:
-- Lab conduct expectations:
-- Common student misconceptions:
-- Tips for engagement:
-- Suggested analogies and examples:
-
-----------------------------------------------------
-5. MODULE 1 DEEP DIVE
-----------------------------------------------------
-- Core concepts:
-- Expected session flow:
-- Practice problems:
-- Key takeaways students must leave with:
-
-----------------------------------------------------
-6. ASSESSMENT PATTERNS
-----------------------------------------------------
-- Types of questions students will face:
-- Evaluation rubrics:
-- How to prepare students:
-
-----------------------------------------------------
-7. RESOURCES & REFERENCES
-----------------------------------------------------
-- Platform content links:
-- Additional reading:
-- Video references:
-- Mentor Bot access instructions:
-"""
-    st.download_button(
-        label="Download Handout Template (.txt)",
-        data=handout_template,
-        file_name="LnD_Handout_Template.txt",
-        mime="text/plain",
-        use_container_width=True,
-    )
-
-    st.markdown("---")
-
-    #  Handout Delivery Schedule 
-    st.markdown("### Handout Delivery Schedule (22\u201325 June 2026)")
-    st.info("L&D delivers breadth-first sweep handouts sequentially. All handouts also available on this bot for download.")
-
-    HANDOUT_SCHEDULE = {
-        "Day 1 — Mon 22 Jun": {
-            "theme": "Core CS Fundamentals (widest campus reach first)",
-            "subjects": [
-                ("Computer Organisation & Architecture", "coa4_v3", "TAU, AMET, MIT, VELS"),
-                ("Object Oriented Programming (Theory)", "ooptheory3_v2", "SGT, MIT, VELS"),
-                ("Object Oriented Programming (Lab)", "ooplab2_v2", "SGT, MIT, VELS"),
-                ("Database Management Systems (Theory)", "dbmstheory_spe3_v2", "SGT, MIT, VELS"),
-                ("Database Management Systems (Lab)", "dbmslab_spe2_v2", "SGT, MIT, VELS"),
-                ("Operating Systems", "os5_v2", "AMET"),
-                ("Formal Language and Automata Theory", "flat_spe5_v1", "TAU, VELS"),
-                ("Coding Skills for Placements — 1", "coding_skills2_v1", "AMET"),
-            ]
-        },
-        "Day 2 — Tue 23 Jun": {
-            "theme": "Algorithms, Databases & Web Development",
-            "subjects": [
-                ("Design & Analysis of Algorithms (Theory)", "daa5_v3 / daatheory3_v2", "TAU, MIT, VELS"),
-                ("Design & Analysis of Algorithms (Lab)", "daalab2_v2", "MIT, VELS"),
-                ("Advanced Database Systems (Theory)", "advdbtheory3_v2", "SGT, AMET"),
-                ("Advanced Database Systems (Lab)", "advdblab3_v2", "SGT"),
-                ("Data Structures & Algorithms 2 (Theory)", "dsa2theory3_v1", "AMET"),
-                ("Data Structures & Algorithms 2 (Lab)", "dsa2lab2_v1", "AMET"),
-                ("Full Stack Web Development (Theory)", "fswdtheory4_v2", "SGT"),
-                ("Full Stack Web Development (Lab)", "fswdlab6_v2", "SGT"),
-            ]
-        },
-        "Day 3 — Wed 24 Jun": {
-            "theme": "Systems, Cloud, DevOps & AI Foundations",
-            "subjects": [
-                ("Cloud Computing", "cloudcom5_v1", "TAU, MIT"),
-                ("System Design", "sys_des5_v1", "TAU, MIT, VELS"),
-                ("DevOps Foundations", "devops5_v1", "MIT"),
-                ("Distributed Systems", "distributed_systems5_v1", "VELS"),
-                ("Linux Administration", "linux_administration_5_v1", "AMET"),
-                ("Elements of AI — Building AI (Theory)", "elements_ai_theory3_v2", "SGT"),
-                ("Elements of AI — Building AI (Lab)", "elements_ai_lab2_v2", "SGT"),
-            ]
-        },
-        "Day 4 — Thu 25 Jun": {
-            "theme": "Specializations, Applied Subjects & Simulated Work",
-            "subjects": [
-                ("Machine Learning", "ml5_v1", "AMET"),
-                ("Malware Analysis", "malware_analysis5_v1", "AMET"),
-                ("UI and UX Design for CSE", "uiux5_v3", "AMET"),
-                ("Introduction to Data Science", "intro_ds5_v1", "AMET"),
-                ("Work Integration", "projtrack_mern_lvl1", "AMET"),
-                ("Simulated Work — Sem 3", "sw_sem3_2026", "SGT, MIT, VELS"),
-                ("Simulated Work — Sem 5/7", "sw_sem57_2026", "TAU, MIT, VELS"),
-            ]
-        },
-    }
-
-    for day, data in HANDOUT_SCHEDULE.items():
-        with st.expander(f"**{day}** — {len(data['subjects'])} subjects | _{data['theme']}_", expanded=False):
-            day_df = pd.DataFrame(data["subjects"], columns=["Subject", "Course Slug", "Campuses Receiving"])
-            st.dataframe(day_df, use_container_width=True, hide_index=True)
-
-    st.markdown("---")
-
-    #  Self-Study & Buddy Mentors 
-    st.markdown("###  Buddy Mentor & Self-Study Framework")
-
-    bm_col1, bm_col2 = st.columns(2)
-    with bm_col1:
-        st.markdown("**Self-Study Window**")
-        st.markdown("""
-        | Handout Day | Study Window to Assessment |
-        |---|---|
-        | Day 1 (22 Jun) | 7 days |
-        | Day 2 (23 Jun) | 6 days |
-        | Day 3 (24 Jun) | 5 days |
-        | Day 4 (25 Jun) | 4 days |
-        """)
-
-    with bm_col2:
-        st.markdown("**Buddy Mentor Likelihood by Subject**")
-        st.markdown("""
-        | Subject | Likelihood |
-        |---|---|
-        | DBMS, FLAT, OS | 🟢 High |
-        | DSA2, Linux, Intro DS | 🟢 High |
-        | OOP, COA, Adv DB | 🟡 Medium |
-        | All new courses |  Low |
-        """)
-
-    st.markdown("---")
-
-    #  Assessment & Classification 
-    st.markdown("###  Assessment & Mentor Classification (29–30 June)")
-
-    ac_col1, ac_col2 = st.columns(2)
-    with ac_col1:
-        st.markdown("**29th June — Module 1 Practice Assessment**")
-        st.markdown("""
-        - **Duration:** 75 minutes (proctored)
-        - **Sections:** MCQ (40%) + Applied (40%) + Pedagogy (20%)
-        - **Pass:** 60% overall, no section below 40%
-        - **Source:** Training handouts + Module 1 content
-        """)
-
-    with ac_col2:
-        st.markdown("**30th June — Presentation Demo**")
-        st.markdown("""
-        - **Duration:** 15 min teaching + 5 min Q&A
-        - **Criteria:** Content Accuracy (30%), Clarity (25%), Engagement (25%), Presence (20%)
-        - **Panel:** 2–3 L&D evaluators
-        """)
-
-    st.markdown("")
-    st.markdown("**Mentor Classification (Post-Assessment)**")
-    class_df = pd.DataFrame([
-        ["O (Outstanding)", "85%+", " Fully ready. Minimal oversight. Can buddy-mentor others.", "🟢"],
-        ["A (Proficient)", "70–84%", " Ready with minor guidance. Standard check-ins.", ""],
-        ["B (Developing)", "60–69%", " Weekly L&D check-ins, content reinforcement, observation.", "🟡"],
-        ["C (At Risk)", "Below 60%", " Daily check-ins, co-teaching, intensive L&D support.", ""],
-    ], columns=["Tier", "Score", "Action Plan", "Flag"])
-    st.dataframe(class_df, use_container_width=True, hide_index=True)
-
-    st.markdown("")
-    st.warning(
-        "**No AI-assisted support at this stage** due to infrastructure constraints. "
-        "Mentors who fail will receive direct L&D intervention. B & C tier mentors are the primary focus area."
-    )
-
-    st.markdown("---")
-
-    #  Key Milestones 
-    st.markdown("###  Key Milestones")
-    milestones_df = pd.DataFrame([
-        ["18–21 Jun", "L&D finalizes handouts + buddy matching", "Preparation"],
-        ["22 Jun (Mon)", "Handout Day 1 — 8 subjects released", "Core CS"],
-        ["23 Jun (Tue)", "Handout Day 2 — 8 subjects released", "Algo, DB, Web"],
-        ["24 Jun (Wed)", "Handout Day 3 — 7 subjects released", "Systems, Cloud, AI"],
-        ["25 Jun (Thu)", "Handout Day 4 — ALL 30 handouts done ", "Specializations"],
-        ["26–28 Jun", "Self-study + Buddy sessions + Doubt clearing", "Mentor prep"],
-        ["29 Jun (Sun)", "MODULE 1 ASSESSMENT", "75-min test"],
-        ["30 Jun (Mon)", "DEMO + CLASSIFICATION", "O/A/B/C finalized"],
-        ["1 Jul (Tue)", "Campus start — TAU, SGT, AMET, MIT", "Semester begins"],
-        ["2 Jul (Wed)", "Campus start — VELS", "Semester begins"],
-    ], columns=["Date", "Milestone", "Notes"])
-    st.dataframe(milestones_df, use_container_width=True, hide_index=True)
-
+            # Download options
+            st.markdown("---")
+            rm_cname = st.session_state.get("readiness_map_course", "Course")
+            download_text = (
+                f"# Subject Readiness Map\n"
+                f"# Course: {rm_cname}\n"
+                f"# Generated by Kalvium Mentor Bot\n\n"
+                f"{rm_content}"
+            )
+            dl_col1, dl_col2 = st.columns(2)
+            with dl_col1:
+                st.download_button(
+                    label="Download as Markdown (.md)",
+                    data=download_text,
+                    file_name=f"{rm_cname.replace(' ', '_')}_Readiness_Map.md",
+                    mime="text/markdown",
+                    use_container_width=True,
+                )
+            with dl_col2:
+                st.download_button(
+                    label="Download as Text (.txt)",
+                    data=download_text,
+                    file_name=f"{rm_cname.replace(' ', '_')}_Readiness_Map.txt",
+                    mime="text/plain",
+                    use_container_width=True,
+                )
 
 #  Tab 5: Readiness Playbook 
 with tab_playbook:

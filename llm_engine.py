@@ -197,6 +197,94 @@ IMPORTANT: Do NOT reproduce or paraphrase the session flow. Keep everything simp
     return _call_llm(prompt)
 
 
+def generate_subject_readiness_map(course_name: str, all_chunks: list[dict]) -> str:
+    """Generate a Subject Readiness Map — a complete mentor preparation guide for a course."""
+    combined = "\n\n".join([chunk["text"] for chunk in all_chunks[:50]])
+
+    prompt = f"""You are creating a **Subject Readiness Map** — a complete, self-contained preparation guide that a mentor can read before they start teaching this course. This should be like a handbook they study to walk into class confident and prepared.
+
+Analyse ALL modules and ALL LUs in this course from the LLD data below.
+
+=== COURSE: {course_name} ===
+{combined}
+=== END COURSE DATA ===
+
+Generate the following sections. Be thorough, specific, and practical. Reference actual module names, LU names, and topics from the LLD.
+
+---
+
+## 1. COURSE OVERVIEW
+
+- **What the course is about:** A clear 3-4 sentence description of what this course teaches and what a student will be able to do after completing it.
+- **Learning Outcomes:** List the 5-7 key outcomes a student achieves by the end of this course.
+- **Target Audience:** Who is this course for? What year/semester students? What background is assumed?
+- **Pre-requisites:** What must students already know before starting this course? Be specific about concepts, not just course names.
+
+---
+
+## 2. FULL COURSE MAP
+
+List EVERY module in order. For each module provide:
+- **Module Name**
+- **Key Topics** covered (list all major topics)
+- **What it builds towards** (one line on why this module matters in the overall arc)
+- **Dependencies** (which previous modules must be completed first)
+
+Present this as a clear table or structured list so a mentor can see the entire course at a glance.
+
+---
+
+## 3. SIMPLIFIED CONTENT SUMMARY
+
+For EACH module, provide:
+- **The core idea in plain English** — explain the module's essence as if explaining to someone who has never seen it. No jargon. Use analogies where helpful.
+- **Key concepts a mentor must know** — the 3-5 most important things the mentor should be able to explain confidently.
+- **How this connects to the next module** — one line bridging to what comes next.
+
+This section should be detailed enough that a mentor reading ONLY this summary would understand what every module is about.
+
+---
+
+## 4. PEDAGOGY GUIDELINES
+
+- **Recommended Teaching Approach:** How should this course be taught? Lecture-heavy? Lab-driven? Project-based? Discussion-based? Give specific advice.
+- **Lab Conduct Expectations:** (if applicable) How should lab sessions be run? What should mentors prepare in advance?
+- **Common Student Misconceptions:** List 5-7 specific misconceptions students typically have in this subject. For each, explain what students wrongly believe and what the correct understanding is.
+- **Tips for Engagement:** 5 concrete techniques to keep students engaged in this specific subject.
+- **Suggested Analogies and Examples:** Provide 4-6 real-world analogies or examples that make abstract concepts click. Be specific — tie each analogy to a module/topic.
+
+---
+
+## 5. MODULE 1 DEEP DIVE
+
+This is the most critical section — mentors must be fully prepared for Module 1 on Day 1.
+
+- **Module 1 Overview:** What is this module about? Why does the course start here?
+- **Concepts Covered:** List every key concept in Module 1, explained simply.
+- **Expected Session Flow:** How should a mentor structure their Module 1 sessions? What order should topics be covered? What should each session achieve?
+- **Practice Problems / Activities:** Suggest 3-5 specific practice problems or in-class activities for Module 1.
+- **Key Takeaways:** What must every student walk away understanding after Module 1? List 3-5 non-negotiable takeaways.
+- **Where Students Will Struggle:** Identify 2-3 specific sticking points in Module 1 and how to address them.
+
+---
+
+## 6. ASSESSMENT PATTERNS
+
+- **Types of Questions:** What kinds of questions will students face? (MCQ, coding, short answer, diagram-based, etc.) Give 2-3 example question formats per type.
+- **Evaluation Rubric Guidance:** How is student work typically evaluated in this subject? What do evaluators look for?
+- **How to Prepare Students:** What should mentors do in class to ensure students are ready for assessments? Specific tips — not generic advice.
+
+---
+
+IMPORTANT RULES:
+- Do NOT reproduce session flows verbatim from the LLD. Summarize and rephrase.
+- Be SPECIFIC — reference actual module names, LU names, and topics from the data.
+- Keep language simple and mentor-friendly. This is a preparation guide, not an academic paper.
+- Make it actionable — every section should help a mentor DO something better.
+"""
+    return _call_llm(prompt)
+
+
 def generate_course_playbook(course_name: str, all_chunks: list[dict]) -> str:
     """Generate a breadth-first Subject Readiness Playbook for the entire course."""
     # Cap chunks to avoid token overflow, but try to cover all modules
