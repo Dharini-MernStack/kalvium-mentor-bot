@@ -10,7 +10,7 @@ from lld_parser import parse_lld, get_modules, get_lus_for_module, lu_to_text, d
 from rag_engine import RAGEngine
 from llm_engine import (
     configure_gemini, configure_grok, configure_openai, get_active_provider,
-    get_gemini_response, generate_module_insights, generate_lu_breakdown, generate_srd_playbook
+    get_gemini_response, generate_module_insights, generate_lu_breakdown
 )
 
 # ─── Page Config ───
@@ -134,16 +134,26 @@ with st.sidebar:
     # Course Selection
     st.markdown("## 📚 Select Course")
     course_options = {k: f"{v['icon']} {v['name']}" for k, v in COURSES.items()}
+    course_keys = list(course_options.keys()) + ["__custom__"]
+    course_labels = {k: v for k, v in course_options.items()}
+    course_labels["__custom__"] = "✏️ Other (type your own)"
+
     selected = st.radio(
         "Choose a course:",
-        options=list(course_options.keys()),
-        format_func=lambda x: course_options[x],
+        options=course_keys,
+        format_func=lambda x: course_labels[x],
         index=None,
-        help="Select the course whose LLD you want to analyse"
+        help="Select a course or type your own"
     )
 
-    if selected:
+    if selected == "__custom__":
+        custom_course = st.text_input("Enter course name:", placeholder="e.g., Data Structures, CN, SE...")
+        if custom_course:
+            st.session_state.selected_course = custom_course
+            st.session_state.custom_course_name = custom_course
+    elif selected:
         st.session_state.selected_course = selected
+        st.session_state.custom_course_name = None
         st.caption(COURSES[selected]["description"])
 
     st.divider()
@@ -240,9 +250,17 @@ df = st.session_state.lld_data
 modules = get_modules(df)
 course_info = COURSES.get(st.session_state.selected_course, {})
 
+# Handle custom course names
+if not course_info and st.session_state.get("custom_course_name"):
+    course_info = {
+        "name": st.session_state.custom_course_name,
+        "icon": "📚",
+        "description": f"Custom course: {st.session_state.custom_course_name}"
+    }
+
 # Tabs
-tab_overview, tab_modules, tab_lu_explorer, tab_srd, tab_chat = st.tabs([
-    "📊 Course Overview", "📦 Module Insights", "🔍 LU Explorer", "🎯 SRD Playbook", "💬 Ask the Bot"
+tab_overview, tab_modules, tab_lu_explorer, tab_chat = st.tabs([
+    "📊 Course Overview", "📦 Module Insights", "🔍 LU Explorer", "💬 Ask the Bot"
 ])
 
 # ─── Tab 1: Course Overview ───
@@ -297,10 +315,10 @@ with tab_overview:
 
 # ─── Tab 2: Module Insights ───
 with tab_modules:
-    st.subheader("📦 Module-Level Insights")
-    st.caption("Select a module to get AI-generated insights for mentors.")
+    st.subheader("🎬 Module Insights — The Big Picture")
+    st.caption("A teaser for the module: what it conveys, why it matters, and where students will struggle.")
 
-    selected_module = st.selectbox("Choose a module:", modules, index=0)
+    selected_module = st.selectbox("Choose a module:", modules, index=0, key="mod_select")
 
     if selected_module:
         mod_df = get_lus_for_module(df, selected_module)
@@ -311,28 +329,22 @@ with tab_modules:
         for _, row in mod_df.iterrows():
             lu_seq = row.get("lu_sequence", "")
             lu_name = row.get("lu_name", "")
-            fa = row.get("fa_type", "")
             st.markdown(
-                f'<div class="lu-card"><strong>LU {lu_seq}</strong> — {lu_name} '
-                f'&nbsp; <code>📝 {fa}</code></div>',
+                f'<div class="lu-card"><strong>LU {lu_seq}</strong> — {lu_name}</div>',
                 unsafe_allow_html=True
             )
 
         st.markdown("---")
 
-        if st.button("🤖 Generate Module Insights", key="mod_insights", type="primary"):
-            with st.spinner(f"Analysing {selected_module}... (this may take 15-20 seconds)"):
-                # Get all chunks for this module
+        if st.button("🎬 Generate Module Teaser", key="mod_insights", type="primary"):
+            with st.spinner(f"Creating teaser for {selected_module}... (15-20 seconds)"):
                 mod_chunks = [c for c in st.session_state.rag_engine.chunks
                               if c["metadata"].get("module") == selected_module]
                 if not mod_chunks:
-                    # Fallback: generate from dataframe
                     mod_chunks = dataframe_to_chunks(mod_df)
 
                 insights = generate_module_insights(selected_module, mod_chunks)
                 st.markdown(insights)
-
-                # Store in session for reference
                 st.session_state[f"insights_{selected_module}"] = insights
 
         # Show cached insights if available
@@ -344,8 +356,8 @@ with tab_modules:
 
 # ─── Tab 3: LU Explorer ───
 with tab_lu_explorer:
-    st.subheader("🔍 LU Deep-Dive Explorer")
-    st.caption("Select any LU to get a mentor-ready breakdown with engagement tips.")
+    st.subheader("🔍 LU Explorer — Simplified")
+    st.caption("Understand any LU in the simplest terms — and know where students will get stuck.")
 
     col_mod, col_lu = st.columns([1, 2])
 
@@ -377,176 +389,139 @@ with tab_lu_explorer:
         with st.expander("📄 Raw LU Data", expanded=False):
             st.text(lu_text)
 
-        # Quick info cards
-        col1, col2 = st.columns(2)
-        with col1:
-            st.info(f"**Assessment:** {lu_row.get('fa_type', 'N/A')}")
-        with col2:
-            st.info(f"**Status:** {lu_row.get('completion_status', 'N/A')}")
-
-        # Learning objectives & outcomes
+        # Learning objectives
         objectives = lu_row.get("learning_objectives", "")
         if pd.notna(objectives) and str(objectives).strip():
             with st.expander("🎯 Learning Objectives", expanded=True):
                 st.markdown(str(objectives))
 
-        outcomes = lu_row.get("learning_outcomes", "")
-        if pd.notna(outcomes) and str(outcomes).strip():
-            with st.expander("📈 Learning Outcomes", expanded=False):
-                st.markdown(str(outcomes))
-
-        # Assessment details
-        assess = lu_row.get("assessment_details", "")
-        if pd.notna(assess) and str(assess).strip():
-            with st.expander("📝 Assessment Details", expanded=False):
-                st.markdown(str(assess))
-
-        # Author notes
-        notes = lu_row.get("note_for_authors", "")
-        if pd.notna(notes) and str(notes).strip():
-            with st.expander("📝 Author Notes & Watch-outs", expanded=False):
-                st.warning(str(notes))
-
         st.markdown("---")
 
         # AI breakdown
-        if st.button("🤖 Generate Mentor Breakdown", key="lu_breakdown", type="primary"):
-            with st.spinner(f"Creating mentor guide for {selected_lu}..."):
+        if st.button("🧒 Explain This LU Simply", key="lu_breakdown", type="primary"):
+            with st.spinner(f"Simplifying {selected_lu}..."):
                 breakdown = generate_lu_breakdown(lu_text, selected_lu)
                 st.markdown(breakdown)
+                st.session_state[f"lu_breakdown_{selected_lu}"] = breakdown
+
+        # Show cached breakdown
+        cached_lu = st.session_state.get(f"lu_breakdown_{selected_lu}")
+        if cached_lu and not st.session_state.get("_just_generated"):
+            with st.expander("📄 Previously Generated Breakdown", expanded=False):
+                st.markdown(cached_lu)
 
 
-# ─── Tab 4: SRD Playbook ───
-with tab_srd:
-    st.subheader("🎯 Subject Readiness Day (SRD) Playbook Generator")
-    st.caption(
-        "Generate bootcamp materials for mentor readiness days. "
-        "Choose a component or generate the full playbook."
-    )
-
-    srd_type = st.radio(
-        "What do you want to generate?",
-        ["📋 Full SRD Playbook", "⏱️ Breadth Sweep Script", "🔬 Deep Dive Topics", "🧪 Practice Self-Check"],
-        horizontal=True,
-        help="Full playbook includes all components. Or generate individual sections. Note: Actual readiness assessments are conducted separately by L&D — not generated here."
-    )
-
-    srd_type_map = {
-        "📋 Full SRD Playbook": "full",
-        "⏱️ Breadth Sweep Script": "breadth_sweep",
-        "🔬 Deep Dive Topics": "deep_dive",
-        "🧪 Practice Self-Check": "practice",
-    }
-
-    # Optional: select specific modules to include
-    st.markdown("---")
-    srd_scope = st.multiselect(
-        "Scope — select modules to include (leave empty for all):",
-        modules,
-        default=[],
-        help="Select specific modules or leave empty to include the entire course"
-    )
-
-    course_name = course_info.get('name', 'Course')
-
-    if st.button("🚀 Generate SRD Content", key="srd_gen", type="primary"):
-        with st.spinner(f"Generating {srd_type.split(' ', 1)[1]}... (this may take 30-60 seconds)"):
-            # Get chunks for selected scope
-            if srd_scope:
-                srd_chunks = [c for c in st.session_state.rag_engine.chunks
-                              if c["metadata"].get("module") in srd_scope]
-            else:
-                srd_chunks = st.session_state.rag_engine.chunks
-
-            if not srd_chunks:
-                srd_chunks = dataframe_to_chunks(df)
-
-            result = generate_srd_playbook(
-                course_name,
-                srd_chunks,
-                srd_type=srd_type_map[srd_type]
-            )
-            st.markdown(result)
-
-            # Cache result
-            st.session_state[f"srd_{srd_type_map[srd_type]}"] = result
-
-    # Show cached results
-    for key, label in [("srd_full", "Full Playbook"), ("srd_breadth_sweep", "Breadth Sweep"),
-                        ("srd_deep_dive", "Deep Dives"), ("srd_practice", "Practice Self-Check")]:
-        cached = st.session_state.get(key)
-        if cached:
-            with st.expander(f"📄 Previously Generated: {label}", expanded=False):
-                st.markdown(cached)
-
-
-# ─── Tab 5: Chat ───
+# ─── Tab 4: Chat ───
 with tab_chat:
     st.subheader("💬 Ask the Mentor Bot")
-    st.caption("Ask anything about the course design, specific LUs, pedagogy ideas, or troubleshooting.")
+    st.caption("Ask anything about the course. Max 5 messages per thread — start a new thread to reset.")
+
+    MAX_CHAT_TURNS = 5  # Max user messages per thread
+
+    # Context selector: Module + LU
+    st.markdown("**📍 Set Context (optional):**")
+    ctx_col1, ctx_col2 = st.columns([1, 2])
+    with ctx_col1:
+        chat_module = st.selectbox("Module:", ["— All Modules —"] + modules, key="chat_module")
+    with ctx_col2:
+        chat_lu = None
+        if chat_module and chat_module != "— All Modules —":
+            chat_mod_df = get_lus_for_module(df, chat_module)
+            chat_lu_options = ["— All LUs —"]
+            for _, row in chat_mod_df.iterrows():
+                seq = row.get("lu_sequence", "")
+                name = row.get("lu_name", "Unknown")
+                chat_lu_options.append(f"LU {seq} — {name}")
+            chat_lu = st.selectbox("Learning Unit:", chat_lu_options, key="chat_lu")
+
+    st.markdown("---")
 
     # Quick prompt suggestions
     st.markdown("**Quick prompts:**")
-    quick_cols = st.columns(4)
+    quick_cols = st.columns(3)
     quick_prompts = [
-        "Summarise all modules in this course",
-        "Which LUs might be hardest for students?",
-        "Suggest 3 ways to make Module 1 more engaging",
-        "What are the cross-module bridges?"
+        "What will students find most difficult in this LU?",
+        "Where will students get stuck in this module?",
+        "Explain the core concept of this LU simply",
     ]
     for col, prompt in zip(quick_cols, quick_prompts):
         with col:
-            if st.button(prompt, key=f"qp_{prompt[:20]}", use_container_width=True):
+            if st.button(prompt, key=f"qp_{prompt[:25]}", use_container_width=True):
                 st.session_state.pending_prompt = prompt
 
     st.markdown("---")
+
+    # Count user messages
+    user_msg_count = sum(1 for m in st.session_state.chat_history if m["role"] == "user")
 
     # Chat display
     for msg in st.session_state.chat_history:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-    # Chat input
-    user_input = st.chat_input("Ask about the course LLD...")
+    # Check thread limit
+    if user_msg_count >= MAX_CHAT_TURNS:
+        st.warning(f"🔄 You've reached {MAX_CHAT_TURNS} messages in this thread. Please start a new thread.")
+        if st.button("🔄 Start New Thread", key="new_thread", type="primary"):
+            st.session_state.chat_history = []
+            st.rerun()
+    else:
+        # Chat input
+        remaining = MAX_CHAT_TURNS - user_msg_count
+        user_input = st.chat_input(f"Ask about the course... ({remaining} messages remaining)")
 
-    # Handle quick prompt or typed input
-    if hasattr(st.session_state, "pending_prompt") and st.session_state.pending_prompt:
-        user_input = st.session_state.pending_prompt
-        st.session_state.pending_prompt = None
+        # Handle quick prompt or typed input
+        if hasattr(st.session_state, "pending_prompt") and st.session_state.pending_prompt:
+            user_input = st.session_state.pending_prompt
+            st.session_state.pending_prompt = None
 
-    if user_input:
-        # Display user message
-        st.session_state.chat_history.append({"role": "user", "content": user_input})
-        with st.chat_message("user"):
-            st.markdown(user_input)
+        if user_input:
+            # Build context prefix based on module/LU selection
+            context_prefix = ""
+            module_filter = None
+            if chat_module and chat_module != "— All Modules —":
+                context_prefix += f"[Context: Module = {chat_module}"
+                module_filter = chat_module
+                if chat_lu and chat_lu != "— All LUs —":
+                    context_prefix += f", {chat_lu}"
+                context_prefix += "] "
 
-        # Retrieve relevant context
-        with st.chat_message("assistant"):
-            with st.spinner("Thinking..."):
-                context_chunks = st.session_state.rag_engine.retrieve(user_input, top_k=6)
+            display_input = user_input
+            augmented_input = context_prefix + user_input if context_prefix else user_input
 
-                # Build Gemini chat history format
-                gemini_history = []
-                for msg in st.session_state.chat_history[:-1]:  # Exclude current
-                    gemini_history.append({
-                        "role": msg["role"] if msg["role"] == "user" else "model",
-                        "parts": [msg["content"]]
-                    })
+            # Display user message
+            st.session_state.chat_history.append({"role": "user", "content": display_input})
+            with st.chat_message("user"):
+                st.markdown(display_input)
 
-                response = get_gemini_response(user_input, context_chunks, gemini_history)
-                st.markdown(response)
+            # Retrieve relevant context
+            with st.chat_message("assistant"):
+                with st.spinner("Thinking..."):
+                    context_chunks = st.session_state.rag_engine.retrieve(
+                        augmented_input, top_k=6, module_filter=module_filter
+                    )
 
-                # Show source chunks
-                with st.expander("📎 Source chunks used for this answer"):
-                    for i, chunk in enumerate(context_chunks, 1):
-                        meta = chunk["metadata"]
-                        st.caption(
-                            f"**Chunk {i}** | Module: {meta.get('module', 'N/A')} | "
-                            f"LU: {meta.get('lu_seq', '')} - {meta.get('lu_name', '')} | "
-                            f"Score: {chunk['score']:.3f}"
-                        )
+                    # Build chat history format
+                    gemini_history = []
+                    for msg in st.session_state.chat_history[:-1]:
+                        gemini_history.append({
+                            "role": msg["role"] if msg["role"] == "user" else "model",
+                            "parts": [msg["content"]]
+                        })
 
-        st.session_state.chat_history.append({"role": "assistant", "content": response})
+                    response = get_gemini_response(augmented_input, context_chunks, gemini_history)
+                    st.markdown(response)
+
+                    with st.expander("📎 Source chunks used"):
+                        for i, chunk in enumerate(context_chunks, 1):
+                            meta = chunk["metadata"]
+                            st.caption(
+                                f"**Chunk {i}** | Module: {meta.get('module', 'N/A')} | "
+                                f"LU: {meta.get('lu_seq', '')} - {meta.get('lu_name', '')} | "
+                                f"Score: {chunk['score']:.3f}"
+                            )
+
+            st.session_state.chat_history.append({"role": "assistant", "content": response})
 
     # Clear chat button
     if st.session_state.chat_history:

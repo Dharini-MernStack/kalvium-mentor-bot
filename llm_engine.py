@@ -9,26 +9,22 @@ _active_provider = None  # "gemini", "grok", or "openai"
 
 SYSTEM_PROMPT = """You are **Kalvium Mentor Assistant** — an expert instructional design advisor, subject-matter expert, and L&D strategist for BTech CSE courses at Kalvium.
 
-You help mentors understand, improve, and deliver course content. You also help the L&D team create Subject Readiness Day (SRD) bootcamp playbooks. You have access to the course's Low-Level Design (LLD) documents as context.
+You help mentors understand, explore, and get excited about course content. You have access to the course's Low-Level Design (LLD) documents as context.
 
 **Your capabilities:**
-1. **Module Insights** — Summarise modules: total LUs, learning paths, coverage gaps, effort distribution.
-2. **LU Deep-Dive** — For any Learning Unit, explain objectives, assessment, author notes, and engagement tips in mentor-friendly language. Do NOT reproduce session flows — those are confidential design assets.
-3. **Making LUs Interesting** — Suggest pedagogy improvements: real-world hooks, analogies, gamification, active-learning techniques, Socratic questioning, pair-programming prompts.
-4. **Simplification** — Rewrite dense technical content into mentor-ready talking points and student-facing explanations.
-5. **Cross-LU Bridges** — Identify how LUs connect, prerequisites, and knowledge gaps.
-6. **Assessment Guidance** — Evaluate assessment quality, suggest rubrics, and identify missing evaluation criteria.
-7. **Subject-Matter Q&A** — Answer conceptual/technical questions about topics covered in the course using LLD context + your own expertise.
-8. **SRD Playbook Generation** — Create Subject Readiness Day bootcamp playbooks for mentors. Generate breadth sweep scripts, deep dive topic guides, assessment banks, and facilitator runsheets based on course LLD data.
+1. **Module Insights** — Like a teaser/trailer for the module: what it conveys, why it matters for a CSE grad, and where students may struggle or get stuck.
+2. **LU Explorer** — Explain any Learning Unit in simple, jargon-free language (like explaining to a 5-year-old), and highlight where students will have doubts or get stuck.
+3. **Subject-Matter Q&A** — Answer conceptual/technical questions about topics covered in the course using LLD context + your own expertise.
+4. **Simplification** — Rewrite dense technical content into simple, relatable explanations.
 
 **Rules:**
 - Use the LLD context to ground your answers — reference specific LU numbers, module names, and course structure when relevant.
 - For conceptual/technical questions, DO NOT just say the LLD doesn't contain the answer. Use the LLD to identify relevant LUs, then provide a complete expert answer.
-- NEVER reproduce or paraphrase session flows from the LLD. Session flows are confidential design documents meant only for content authors. Instead, focus on learning objectives, outcomes, assessment details, and author notes.
-- When generating SRD content, structure it as actionable facilitator materials — not academic documents.
+- NEVER reproduce or paraphrase session flows from the LLD. Session flows are confidential design documents meant only for content authors.
 - Use tables, bullet points, and structured formatting for clarity.
 - Keep the tone professional yet approachable — you're a peer advisor and expert, not a critic.
 - For BTech CSE level — balance theory with practical application.
+- Keep answers concise and focused. Avoid lengthy generic advice.
 """
 
 
@@ -140,44 +136,40 @@ def get_gemini_response(query: str, context_chunks: list[dict], chat_history: li
 
 
 def generate_module_insights(module_name: str, lu_data: list[dict]) -> str:
-    """Generate comprehensive insights for an entire module."""
+    """Generate a teaser-style module insight — what it conveys, why it matters, where students struggle."""
     combined = "\n\n".join([chunk["text"] for chunk in lu_data])
 
-    prompt = f"""Analyse the following module from the course LLD and provide comprehensive mentor insights.
+    prompt = f"""You are creating a MODULE TEASER — like a movie trailer for this module. This is NOT a detailed mentor guide. Think of it as zooming out and showing the big picture.
 
 === MODULE: {module_name} ===
 {combined}
 === END MODULE DATA ===
 
-Provide the following analysis in a well-structured format:
+Provide the following in a compelling, concise format:
 
-## 📊 Module Overview
-- Total LUs, key topics covered, overall difficulty progression
+## 🎬 What This Module Is Really About
+- In 3-4 sentences, explain the core idea this module conveys. Not a list of LUs — the BIG PICTURE. What will students truly understand after this module? What mental model are we building?
 
-## 🎯 Learning Objectives & Outcomes Summary
-- Map objectives to outcomes across LUs. Identify gaps or overlaps.
+## 🔥 Why Should a CSE Grad Care?
+- Why is this module essential for a computer science graduate? Connect it to real-world engineering, interviews, jobs, and building things. Light a fire — make it clear why this isn't just academic theory. Be specific and compelling.
 
-## 🔗 LU Flow & Bridges
-- How LUs connect, cross-module bridges, prerequisite chain
+## 🧱 Where Students Will Hit a Wall
+- Identify the 3-4 specific concepts or moments in this module where students typically struggle, get confused, or lose motivation. For each:
+  - **The sticking point**: What exactly is hard
+  - **Why it's hard**: The underlying reason (misconception, abstraction leap, etc.)
+  - **The unlock**: One sentence on what makes it click
 
-## 💡 Engagement Opportunities
-- Which LUs could be more interactive, specific suggestions
+## 🗺️ The Journey in One Line
+- One sentence that captures the entire arc of this module — from where the student starts to where they end up.
 
-## 📝 Assessment Analysis
-- Types used, alignment with outcomes, improvement suggestions
-
-## ⚠️ Mentor Watch-outs
-- Common misconceptions from author notes, tricky concepts, time management tips
-
-## 📈 Effort Distribution
-- Level of effort across LUs, completion status overview
+Keep it punchy, inspiring, and honest. This should make a mentor EXCITED to teach this module.
 """
     return _call_llm(prompt)
 
 
 def generate_lu_breakdown(lu_text: str, lu_name: str) -> str:
-    """Generate a detailed mentor-friendly breakdown of a single LU (WITHOUT session flow)."""
-    prompt = f"""Break down this Learning Unit for a mentor who needs to deliver it in a 45-minute session.
+    """Generate a simple, jargon-free LU explanation with student struggle points."""
+    prompt = f"""Explain this Learning Unit like you're explaining it to a 5-year-old. Use the simplest possible language, everyday analogies, and zero jargon.
 
 === LU: {lu_name} ===
 {lu_text}
@@ -185,154 +177,24 @@ def generate_lu_breakdown(lu_text: str, lu_name: str) -> str:
 
 Provide:
 
-## 🎯 What This LU Is About (2-line summary)
+## 🧒 Explain Like I'm 5
+- Explain the core concept of this LU in the simplest words possible. Use a real-world analogy that anyone can understand. Keep it to 3-4 sentences max.
 
-## 📋 Mentor Prep Checklist
-- What to set up before the session
-- Key concepts to review
-- Common student questions to prepare for
+## 🎯 What Students Will Learn (Plain English)
+- List the key things students will understand after this LU — in simple, non-technical language. No buzzwords.
 
-## 🎮 Making It Interesting
-- 3 specific techniques to make this LU engaging
-- Real-world analogies students will relate to
-- Quick interactive activities (under 5 mins each)
+## 🤔 Where Students Will Have Doubts
+- Identify 2-3 specific points where students will likely get confused or have questions. For each:
+  - **The doubt**: What they'll struggle with
+  - **Why it's confusing**: The underlying reason
+  - **Simple way to clear it**: A one-line explanation or analogy that resolves the doubt
 
-## ⚡ Key Takeaways for Students
-- Top 3 things students MUST leave knowing
-- One-liner summary they can write in their notes
+## 💡 The One Thing to Remember
+- If a student remembers just ONE thing from this LU, what should it be? State it as a simple, memorable sentence.
 
-## 🚨 Watch-outs
-- Misconceptions from author notes
-- Where students typically get stuck
-- How to handle "I don't get it" moments
-
-IMPORTANT: Do NOT reproduce or paraphrase the session flow. Focus only on objectives, outcomes, assessments, and mentor preparation guidance.
+IMPORTANT: Do NOT reproduce or paraphrase the session flow. Keep everything simple and relatable.
 """
     return _call_llm(prompt)
 
 
-def generate_srd_playbook(course_name: str, all_chunks: list[dict], srd_type: str = "full") -> str:
-    """Generate an SRD (Subject Readiness Day) bootcamp playbook."""
-    combined = "\n\n".join([chunk["text"] for chunk in all_chunks[:30]])  # Cap to avoid token overflow
 
-    if srd_type == "breadth_sweep":
-        prompt = f"""Using the following course LLD data, create a **Breadth Sweep Script** for a Subject Readiness Day bootcamp.
-
-=== COURSE: {course_name} ===
-{combined}
-=== END COURSE DATA ===
-
-Create a 90-minute breadth sweep script that covers the ENTIRE course at a high level:
-
-## ⏱️ Breadth Sweep Script (90 minutes)
-
-For each module, provide:
-- **Time block** (e.g., 0-15 min)
-- **Module name and key topics** covered
-- **1-2 sentence summary**: what this covers and why it matters
-- **Key bridge**: how this connects to the next module
-
-The goal is: mentors see the ENTIRE terrain of the subject in 90 minutes. No deep dives — just the map.
-End with a 5-min connections recap showing how all modules fit together.
-
-IMPORTANT: Do NOT reproduce session flows. Use learning objectives and outcomes to describe what each module covers."""
-
-    elif srd_type == "deep_dive":
-        prompt = f"""Using the following course LLD data, identify the **Deep Dive Topics** for a Subject Readiness Day bootcamp.
-
-=== COURSE: {course_name} ===
-{combined}
-=== END COURSE DATA ===
-
-Identify the 4-6 HARDEST / most conceptually tricky topics across the entire course. For each topic:
-
-## 🔬 Deep Dive Topics
-
-For each topic provide:
-### Topic: [Name]
-- **Which LU(s)**: Reference specific LU numbers
-- **Why it's hard**: Common student misconceptions and confusion points (use author notes if available)
-- **The 'aha moment'**: What makes this concept click
-- **How to explain it**: A clear analogy or worked example
-- **5-minute teach-back prompt**: A question a mentor could use to explain this to verify understanding
-
-Focus on topics where author notes mention misconceptions or where the content is conceptually dense."""
-
-    elif srd_type == "practice":
-        prompt = f"""Using the following course LLD data, create a **Practice & Self-Check Kit** for mentors preparing for a Subject Readiness Day.
-
-=== COURSE: {course_name} ===
-{combined}
-=== END COURSE DATA ===
-
-This is for MENTOR SELF-PREPARATION — not the actual assessment. Create materials that help mentors gauge their own readiness:
-
-## 🧪 Practice Self-Check Kit
-
-### Part A: Concept Check (Self-Test)
-Generate 10 conceptual questions covering all modules. For each question:
-- State the question clearly
-- Provide the answer immediately below
-- Add a 1-line explanation of WHY this is the answer
-- These should test understanding, not rote memory
-
-### Part B: Explain-It-To-Me Prompts
-Provide 4 teach-back practice prompts:
-- "How would you explain [concept] to a student who has zero context?"
-- Each prompt should target a different module
-- For each, provide a model answer (2-3 sentences) the mentor can compare against
-
-### Part C: Common Gotchas
-- List 5-8 tricky conceptual traps or frequently confused pairs from this course
-- For each, explain the correct understanding
-
-This is a STUDY AID — mentors should use this to identify their own gaps before the SRD.
-Base all content on the actual course from the LLD."""
-
-    else:  # full playbook
-        prompt = f"""Using the following course LLD data, create a complete **Subject Readiness Day (SRD) Playbook** for mentors.
-
-=== COURSE: {course_name} ===
-{combined}
-=== END COURSE DATA ===
-
-Generate a full SRD playbook with these sections:
-
-## 📊 Section 1: Course Landscape
-- Total modules, total LUs, key topic arc
-- How modules connect (prerequisites, bridges)
-- One-line summary per module
-
-## ⏱️ Section 2: Breadth Sweep Script (90 mins)
-- Time-blocked coverage of ALL modules
-- 1-2 sentences per topic block: what it covers and why
-- Key bridges between modules
-
-## 🔬 Section 3: Deep Dive Topics (2 hours)
-- 4-6 hardest topics with:
-  - Why it's hard (misconceptions from author notes)
-  - Clear analogy or worked example
-  - 5-min teach-back prompt
-
-## 🧪 Section 4: Practice Self-Check
-- 8 concept-check questions with answers (for mentor self-study)
-- 3 teach-back practice prompts with model answers
-- 5 common gotchas / frequently confused pairs
-- NOTE: This is a study aid for mentors. The actual readiness assessment is conducted separately by L&D.
-
-## 🎮 Section 5: Pedagogy Cheat Sheet
-- Best analogies for this course's concepts
-- Common "I don't get it" moments and how to handle them
-- 3 engagement techniques for this type of content
-
-## 📋 Section 6: Facilitator Runsheet
-- Minute-by-minute SRD agenda:
-  - 9:00-10:30 Breadth Sweep
-  - 10:45-12:30 Deep Dive #1
-  - 1:30-3:00 Deep Dive #2 + Pedagogy
-  - 3:15-4:30 Practice session + Q&A
-  - 4:30-5:00 Wrap-up + self-assessment reflection
-
-IMPORTANT: Do NOT reproduce session flows from the LLD. Use learning objectives, outcomes, and author notes to build the playbook."""
-
-    return _call_llm(prompt)
