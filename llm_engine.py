@@ -197,4 +197,67 @@ IMPORTANT: Do NOT reproduce or paraphrase the session flow. Keep everything simp
     return _call_llm(prompt)
 
 
+def generate_course_playbook(course_name: str, all_chunks: list[dict]) -> str:
+    """Generate a breadth-first Subject Readiness Playbook for the entire course."""
+    # Cap chunks to avoid token overflow, but try to cover all modules
+    combined = "\n\n".join([chunk["text"] for chunk in all_chunks[:40]])
+
+    prompt = f"""You are creating a **Subject Readiness Playbook** — a breadth-first sweep of the ENTIRE course that a mentor can read before they start teaching. This is their cheat sheet to walk in prepared and confident.
+
+Analyse ALL modules and ALL LUs in this course holistically.
+
+=== COURSE: {course_name} ===
+{combined}
+=== END COURSE DATA ===
+
+Generate the playbook with these sections:
+
+## 🗺️ Course at a Glance
+- One-line summary of each module and what it builds towards. Show the arc of the entire course — where does the student start, where do they end up?
+
+## 🔥 The Interesting Parts (Students Will Love These)
+- Identify modules/LUs that are naturally engaging, have cool real-world applications, or involve hands-on work. Explain WHY students will find these exciting. Be specific — reference module and LU names.
+
+## 😴 The Boring Parts (Handle With Care)
+- Identify modules/LUs that are dry, theoretical, or repetitive. For each:
+  - **Why it feels boring**: What makes it a slog
+  - **How to make it NOT boring**: One specific technique (roleplay, analogy, challenge, story) to bring it alive
+
+## 📖 Read More Than Once (Needs Extra Prep)
+- Which modules/LUs are dense enough that a mentor should study them twice? What specifically needs deeper understanding? What external resources should they look at?
+
+## ⚡ Quick Wins (Low Effort, High Impact)
+- Which modules/LUs are straightforward and can be delivered confidently with minimal prep? Where can mentors save time?
+
+## 🎭 Roleplay & Activity Opportunities
+- Identify 4-6 specific moments across the course where a mentor can do:
+  - **Roleplays** (e.g., "You are the OS scheduler, your friend is a process...")
+  - **Live challenges** (e.g., "Write this query in 2 minutes")
+  - **Debates** (e.g., "SQL vs NoSQL — pick a side")
+  - **Whiteboard moments** (e.g., "Draw the memory layout")
+  For each, give the module/LU, the activity idea, and how long it takes (2-5 mins).
+
+## 🧱 The Danger Zones (Where Students Will Struggle Most)
+- Rank the top 5 hardest concepts across the ENTIRE course. For each:
+  - Which module/LU
+  - What makes it hard
+  - The one analogy or explanation that makes it click
+
+## 📋 Module-by-Module Readiness Checklist
+For EACH module, provide a one-row summary:
+| Module | Vibe | Prep Needed | Key Risk | Best Activity |
+- **Vibe**: Fun / Neutral / Dry
+- **Prep Needed**: Light / Medium / Heavy
+- **Key Risk**: The #1 thing that could go wrong
+- **Best Activity**: One engagement idea
+
+## 🎯 The One-Page Mentor Mantra
+- 5 bullet points that capture the entire course teaching philosophy. What should the mentor keep in mind every single day?
+
+Keep it practical, honest, and actionable. No fluff. This should feel like advice from a senior mentor who's taught this course 10 times.
+
+IMPORTANT: Do NOT reproduce session flows. Base everything on learning objectives, outcomes, author notes, and your subject expertise.
+"""
+    return _call_llm(prompt)
+
 
