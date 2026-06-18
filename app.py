@@ -414,9 +414,24 @@ with tab_lu_explorer:
 # ─── Tab 4: Chat ───
 with tab_chat:
     st.subheader("💬 Ask the Mentor Bot")
-    st.caption("Ask anything about the course. Max 5 messages per thread — start a new thread to reset.")
+    st.caption("Ask anything about the course. You can go back & forth for up to 5 messages per thread.")
 
     MAX_CHAT_TURNS = 5  # Max user messages per thread
+
+    # "New Chat" button — always visible at the top when there's history
+    if st.session_state.chat_history:
+        new_chat_col, info_col = st.columns([1, 3])
+        with new_chat_col:
+            if st.button("✨ New Chat", key="new_chat_top", type="primary", use_container_width=True):
+                st.session_state.chat_history = []
+                st.rerun()
+        with info_col:
+            user_msg_count = sum(1 for m in st.session_state.chat_history if m["role"] == "user")
+            remaining = MAX_CHAT_TURNS - user_msg_count
+            if remaining > 0:
+                st.caption(f"💬 {user_msg_count}/{MAX_CHAT_TURNS} messages used · {remaining} remaining")
+            else:
+                st.caption(f"💬 {MAX_CHAT_TURNS}/{MAX_CHAT_TURNS} messages used · Start a new chat to continue")
 
     # Context selector: Module + LU
     st.markdown("**📍 Set Context (optional):**")
@@ -461,8 +476,12 @@ with tab_chat:
 
     # Check thread limit
     if user_msg_count >= MAX_CHAT_TURNS:
-        st.warning(f"🔄 You've reached {MAX_CHAT_TURNS} messages in this thread. Please start a new thread.")
-        if st.button("🔄 Start New Thread", key="new_thread", type="primary"):
+        st.toast("🔄 Start a fresh chat! Smaller context window prevents hallucination.", icon="💡")
+        st.info(
+            "You've used all **5 messages** in this thread. "
+            "Start a new chat for fresh, accurate responses — smaller context = less hallucination! 🎯"
+        )
+        if st.button("✨ Start New Chat", key="new_thread", type="primary", use_container_width=True):
             st.session_state.chat_history = []
             st.rerun()
     else:
@@ -523,8 +542,9 @@ with tab_chat:
 
             st.session_state.chat_history.append({"role": "assistant", "content": response})
 
-    # Clear chat button
-    if st.session_state.chat_history:
-        if st.button("🗑️ Clear Chat", key="clear_chat"):
-            st.session_state.chat_history = []
-            st.rerun()
+            # Show toast on 4th message as a heads-up
+            new_count = user_msg_count + 1
+            if new_count == MAX_CHAT_TURNS - 1:
+                st.toast("⚡ 1 message left in this thread!", icon="⚠️")
+            elif new_count >= MAX_CHAT_TURNS:
+                st.toast("🔄 Start a fresh chat! Smaller context = less hallucination.", icon="💡")
