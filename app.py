@@ -13,15 +13,15 @@ from llm_engine import (
     get_gemini_response, generate_module_insights, generate_lu_breakdown, generate_course_playbook
 )
 
-# ─── Page Config ───
+#  Page Config 
 st.set_page_config(
     page_title="Kalvium Mentor Bot",
-    page_icon="🎓",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# ─── Custom CSS ───
+#  Custom CSS 
 st.markdown("""
 <style>
     .main-header {
@@ -61,7 +61,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ─── Session State Init ───
+#  Session State Init 
 if "rag_engine" not in st.session_state:
     st.session_state.rag_engine = RAGEngine()
 if "lld_data" not in st.session_state:
@@ -76,9 +76,9 @@ if "index_built" not in st.session_state:
     st.session_state.index_built = False
 
 
-# ─── Sidebar ───
+#  Sidebar 
 with st.sidebar:
-    st.markdown("## 🔑 Setup")
+    st.markdown("##  Setup")
 
     # LLM Provider Selection
     provider = st.selectbox(
@@ -95,9 +95,9 @@ with st.sidebar:
             st.session_state.api_key = api_key
             st.session_state.api_provider = "gemini"
             st.session_state.gemini_configured = True
-            st.success("✅ Gemini key set")
+            st.success(" Gemini key set")
         else:
-            st.info("🔗 [Get free Gemini API key](https://aistudio.google.com/apikey)")
+            st.info(" [Get free Gemini API key](https://aistudio.google.com/apikey)")
     elif provider == "xAI Grok":
         api_key = st.text_input("Grok API Key", type="password", placeholder="xai-...",
                                 help="Get at https://console.x.ai")
@@ -105,9 +105,9 @@ with st.sidebar:
             st.session_state.api_key = api_key
             st.session_state.api_provider = "grok"
             st.session_state.gemini_configured = True
-            st.success("✅ Grok key set")
+            st.success(" Grok key set")
         else:
-            st.info("🔗 [Get Grok API key](https://console.x.ai)")
+            st.info(" [Get Grok API key](https://console.x.ai)")
     elif provider == "OpenAI":
         api_key = st.text_input("OpenAI API Key", type="password", placeholder="sk-...",
                                 help="Get at https://platform.openai.com/api-keys")
@@ -115,9 +115,9 @@ with st.sidebar:
             st.session_state.api_key = api_key
             st.session_state.api_provider = "openai"
             st.session_state.gemini_configured = True
-            st.success("✅ OpenAI key set")
+            st.success(" OpenAI key set")
         else:
-            st.info("🔗 [Get OpenAI API key](https://platform.openai.com/api-keys)")
+            st.info(" [Get OpenAI API key](https://platform.openai.com/api-keys)")
 
     # Always re-configure client from session state (survives reruns)
     if st.session_state.get("api_key"):
@@ -132,11 +132,11 @@ with st.sidebar:
     st.divider()
 
     # Course Selection
-    st.markdown("## 📚 Select Course")
-    course_options = {k: f"{v['icon']} {v['name']}" for k, v in COURSES.items()}
+    st.markdown("##  Select Course")
+    course_options = {k: v['name'] for k, v in COURSES.items()}
     course_keys = list(course_options.keys()) + ["__custom__"]
     course_labels = {k: v for k, v in course_options.items()}
-    course_labels["__custom__"] = "✏️ Other (type your own)"
+    course_labels["__custom__"] = " Other (type your own)"
 
     selected = st.radio(
         "Choose a course:",
@@ -159,7 +159,7 @@ with st.sidebar:
     st.divider()
 
     # File Upload
-    st.markdown("## 📄 Upload LLD")
+    st.markdown("##  Upload LLD")
     uploaded_file = st.file_uploader(
         "Upload LLD spreadsheet",
         type=["xlsx", "xls", "csv"],
@@ -186,7 +186,7 @@ with st.sidebar:
                 n_chunks = st.session_state.rag_engine.build_index(chunks)
                 st.session_state.index_built = True
 
-            st.success(f"✅ Parsed {len(df)} LUs → {n_chunks} chunks indexed")
+            st.success(f" Parsed {len(df)} LUs  {n_chunks} chunks indexed")
 
             # Show quick stats
             modules = get_modules(df)
@@ -199,28 +199,28 @@ with st.sidebar:
                 st.metric("Completed", f"{done}/{len(df)}")
 
         except Exception as e:
-            st.error(f"❌ Error parsing file: {e}")
+            st.error(f" Error parsing file: {e}")
 
     st.divider()
-    st.caption("Built for Kalvium L&D Team 🚀")
+    st.caption("Built for Kalvium L&D Team ")
     st.caption("Free tier: Gemini Flash + local embeddings")
 
 
-# ─── Header ───
+#  Header 
 st.markdown("""
 <div class="main-header">
-    <h1>🎓 Kalvium Mentor Bot</h1>
+    <h1> Kalvium Mentor Bot</h1>
     <p>Your AI-powered course design assistant — upload an LLD, explore modules, and get actionable mentor insights.</p>
 </div>
 """, unsafe_allow_html=True)
 
-# ─── Pre-flight checks ───
+#  Pre-flight checks 
 if not st.session_state.gemini_configured:
-    st.warning("👈 Please enter your **Gemini API key** in the sidebar to get started.")
+    st.warning(" Please enter your **Gemini API key** in the sidebar to get started.")
     st.stop()
 
 if st.session_state.lld_data is None:
-    st.info("👈 Please **select a course** and **upload its LLD** spreadsheet in the sidebar.")
+    st.info(" Please **select a course** and **upload its LLD** spreadsheet in the sidebar.")
 
     # Show placeholder with instructions
     col1, col2, col3 = st.columns(3)
@@ -228,7 +228,7 @@ if st.session_state.lld_data is None:
         with col:
             st.markdown(f"""
             <div class="stat-box">
-                <h3>{course['icon']}</h3>
+                <h3>{key}</h3>
                 <p><strong>{course['name']}</strong></p>
                 <p style="font-size:0.8rem; color:#999;">{course['description']}</p>
             </div>
@@ -236,7 +236,7 @@ if st.session_state.lld_data is None:
 
     st.markdown("---")
     st.markdown("""
-    ### 📝 How to use:
+    ###  How to use:
     1. **Get a free Gemini API key** from [Google AI Studio](https://aistudio.google.com/apikey)
     2. **Select a course** from the sidebar
     3. **Download your LLD** Google Sheet as `.xlsx`
@@ -245,7 +245,7 @@ if st.session_state.lld_data is None:
     """)
     st.stop()
 
-# ─── Main Content ───
+#  Main Content 
 df = st.session_state.lld_data
 modules = get_modules(df)
 course_info = COURSES.get(st.session_state.selected_course, {})
@@ -254,27 +254,27 @@ course_info = COURSES.get(st.session_state.selected_course, {})
 if not course_info and st.session_state.get("custom_course_name"):
     course_info = {
         "name": st.session_state.custom_course_name,
-        "icon": "📚",
+        "icon": "",
         "description": f"Custom course: {st.session_state.custom_course_name}"
     }
 
 # Tabs
 tab_overview, tab_modules, tab_lu_explorer, tab_readiness_map, tab_playbook, tab_chat = st.tabs([
-    "📊 Course Overview", "📦 Module Insights", "🔍 LU Explorer", "🗺️ Subject Readiness Map", "📚 Readiness Playbook", "💬 Ask the Bot"
+    " Course Overview", " Module Insights", " LU Explorer", " Subject Readiness Map", " Readiness Playbook", " Ask the Bot"
 ])
 
-# ─── Tab 1: Course Overview ───
+#  Tab 1: Course Overview 
 with tab_overview:
-    st.subheader(f"{course_info.get('icon', '📚')} {course_info.get('name', 'Course')} — Overview")
+    st.subheader(f"{course_info.get('name', 'Course')} — Overview")
 
     # Stats row
-    stat_cols = ["📦 Modules", "📝 Total LUs"]
+    stat_cols = [" Modules", " Total LUs"]
     stat_vals = [len(modules), len(df)]
 
     if "completion_status" in df.columns:
         pending = df["completion_status"].astype(str).str.lower().str.contains("pending").sum()
         done = len(df) - pending
-        stat_cols.append("✅ Completed")
+        stat_cols.append(" Completed")
         stat_vals.append(f"{done}/{len(df)}")
 
     cols = st.columns(len(stat_cols))
@@ -285,7 +285,7 @@ with tab_overview:
     st.markdown("---")
 
     # Module breakdown table
-    st.markdown("### 📋 Module Breakdown")
+    st.markdown("###  Module Breakdown")
     module_summary = []
     for mod in modules:
         mod_df = get_lus_for_module(df, mod)
@@ -302,7 +302,7 @@ with tab_overview:
     st.dataframe(summary_df, use_container_width=True, hide_index=True)
 
     # Raw data preview
-    with st.expander("📄 View Raw LLD Data"):
+    with st.expander(" View Raw LLD Data"):
         display_cols = [c for c in df.columns if c in [
             "module_name", "lu_sequence", "lu_name",
             "learning_objectives", "fa_type", "completion_status", "level_of_effort"
@@ -313,9 +313,9 @@ with tab_overview:
             st.dataframe(df, use_container_width=True, hide_index=True)
 
 
-# ─── Tab 2: Module Insights ───
+#  Tab 2: Module Insights 
 with tab_modules:
-    st.subheader("🎬 Module Insights — The Big Picture")
+    st.subheader(" Module Insights — The Big Picture")
     st.caption("A teaser for the module: what it conveys, why it matters, and where students will struggle.")
 
     selected_module = st.selectbox("Choose a module:", modules, index=0, key="mod_select")
@@ -336,7 +336,7 @@ with tab_modules:
 
         st.markdown("---")
 
-        if st.button("🎬 Generate Module Teaser", key="mod_insights", type="primary"):
+        if st.button(" Generate Module Teaser", key="mod_insights", type="primary"):
             with st.spinner(f"Creating teaser for {selected_module}... (15-20 seconds)"):
                 mod_chunks = [c for c in st.session_state.rag_engine.chunks
                               if c["metadata"].get("module") == selected_module]
@@ -350,13 +350,13 @@ with tab_modules:
         # Show cached insights if available
         cached = st.session_state.get(f"insights_{selected_module}")
         if cached and not st.session_state.get("_just_generated"):
-            with st.expander("📄 Previously Generated Insights", expanded=False):
+            with st.expander(" Previously Generated Insights", expanded=False):
                 st.markdown(cached)
 
 
-# ─── Tab 3: LU Explorer ───
+#  Tab 3: LU Explorer 
 with tab_lu_explorer:
-    st.subheader("🔍 LU Explorer — Simplified")
+    st.subheader(" LU Explorer — Simplified")
     st.caption("Understand any LU in the simplest terms — and know where students will get stuck.")
 
     col_mod, col_lu = st.columns([1, 2])
@@ -386,19 +386,19 @@ with tab_lu_explorer:
         lu_text = lu_to_text(lu_row)
 
         # Show raw LU data in expandable
-        with st.expander("📄 Raw LU Data", expanded=False):
+        with st.expander(" Raw LU Data", expanded=False):
             st.text(lu_text)
 
         # Learning objectives
         objectives = lu_row.get("learning_objectives", "")
         if pd.notna(objectives) and str(objectives).strip():
-            with st.expander("🎯 Learning Objectives", expanded=True):
+            with st.expander(" Learning Objectives", expanded=True):
                 st.markdown(str(objectives))
 
         st.markdown("---")
 
         # AI breakdown
-        if st.button("🧒 Explain This LU Simply", key="lu_breakdown", type="primary"):
+        if st.button(" Explain This LU Simply", key="lu_breakdown", type="primary"):
             with st.spinner(f"Simplifying {selected_lu}..."):
                 breakdown = generate_lu_breakdown(lu_text, selected_lu)
                 st.markdown(breakdown)
@@ -407,17 +407,17 @@ with tab_lu_explorer:
         # Show cached breakdown
         cached_lu = st.session_state.get(f"lu_breakdown_{selected_lu}")
         if cached_lu and not st.session_state.get("_just_generated"):
-            with st.expander("📄 Previously Generated Breakdown", expanded=False):
+            with st.expander(" Previously Generated Breakdown", expanded=False):
                 st.markdown(cached_lu)
 
 
-# ─── Tab 4: Subject Readiness Map ───
+#  Tab 4: Subject Readiness Map 
 with tab_readiness_map:
-    st.subheader("🗺️ Subject Readiness Map — Early-Start Campuses")
+    st.subheader(" Subject Readiness Map — Early-Start Campuses")
     st.caption("L&D handout delivery schedule, campus-subject mapping, buddy mentor likelihood, and mentor classification framework.")
 
-    # ── Campus-Subject Overview ──
-    st.markdown("### 🏫 Campus Start Dates & Technical Subject Count")
+    #  Campus-Subject Overview 
+    st.markdown("###  Campus Start Dates & Technical Subject Count")
 
     CAMPUS_DATA = {
         "TAU": {
@@ -565,8 +565,8 @@ with tab_readiness_map:
 
     st.markdown("---")
 
-    # ── Expandable campus details ──
-    st.markdown("### 📋 Campus-wise Subject Details")
+    #  Expandable campus details 
+    st.markdown("###  Campus-wise Subject Details")
     for code, info in CAMPUS_DATA.items():
         with st.expander(f"**{code} — {info['full_name']}**  |  {info['start_date']}  |  {info['total']} subjects  |  Buddy: {info['buddy_likelihood']}", expanded=False):
             st.markdown(f"**Program:** {info['program']}  |  **Semesters:** {info['semesters']}")
@@ -577,8 +577,8 @@ with tab_readiness_map:
 
     st.markdown("---")
 
-    # ── Handout Delivery Schedule ──
-    st.markdown("### 📦 Handout Delivery Schedule (22–25 June 2026)")
+    #  Handout Delivery Schedule 
+    st.markdown("###  Handout Delivery Schedule (22–25 June 2026)")
     st.info("L&D delivers breadth-first sweep handouts sequentially. All handouts also available on this bot for download.")
 
     HANDOUT_SCHEDULE = {
@@ -641,8 +641,8 @@ with tab_readiness_map:
 
     st.markdown("---")
 
-    # ── Self-Study & Buddy Mentors ──
-    st.markdown("### 👥 Buddy Mentor & Self-Study Framework")
+    #  Self-Study & Buddy Mentors 
+    st.markdown("###  Buddy Mentor & Self-Study Framework")
 
     bm_col1, bm_col2 = st.columns(2)
     with bm_col1:
@@ -664,13 +664,13 @@ with tab_readiness_map:
         | DBMS, FLAT, OS | 🟢 High |
         | DSA2, Linux, Intro DS | 🟢 High |
         | OOP, COA, Adv DB | 🟡 Medium |
-        | All new courses | 🔴 Low |
+        | All new courses |  Low |
         """)
 
     st.markdown("---")
 
-    # ── Assessment & Classification ──
-    st.markdown("### 📝 Assessment & Mentor Classification (29–30 June)")
+    #  Assessment & Classification 
+    st.markdown("###  Assessment & Mentor Classification (29–30 June)")
 
     ac_col1, ac_col2 = st.columns(2)
     with ac_col1:
@@ -693,10 +693,10 @@ with tab_readiness_map:
     st.markdown("")
     st.markdown("**Mentor Classification (Post-Assessment)**")
     class_df = pd.DataFrame([
-        ["O (Outstanding)", "85%+", "✅ Fully ready. Minimal oversight. Can buddy-mentor others.", "🟢"],
-        ["A (Proficient)", "70–84%", "✅ Ready with minor guidance. Standard check-ins.", "🔵"],
-        ["B (Developing)", "60–69%", "⚠️ Weekly L&D check-ins, content reinforcement, observation.", "🟡"],
-        ["C (At Risk)", "Below 60%", "🚨 Daily check-ins, co-teaching, intensive L&D support.", "🔴"],
+        ["O (Outstanding)", "85%+", " Fully ready. Minimal oversight. Can buddy-mentor others.", "🟢"],
+        ["A (Proficient)", "70–84%", " Ready with minor guidance. Standard check-ins.", ""],
+        ["B (Developing)", "60–69%", " Weekly L&D check-ins, content reinforcement, observation.", "🟡"],
+        ["C (At Risk)", "Below 60%", " Daily check-ins, co-teaching, intensive L&D support.", ""],
     ], columns=["Tier", "Score", "Action Plan", "Flag"])
     st.dataframe(class_df, use_container_width=True, hide_index=True)
 
@@ -708,14 +708,14 @@ with tab_readiness_map:
 
     st.markdown("---")
 
-    # ── Key Milestones ──
-    st.markdown("### 🗓️ Key Milestones")
+    #  Key Milestones 
+    st.markdown("###  Key Milestones")
     milestones_df = pd.DataFrame([
         ["18–21 Jun", "L&D finalizes handouts + buddy matching", "Preparation"],
         ["22 Jun (Mon)", "Handout Day 1 — 8 subjects released", "Core CS"],
         ["23 Jun (Tue)", "Handout Day 2 — 8 subjects released", "Algo, DB, Web"],
         ["24 Jun (Wed)", "Handout Day 3 — 7 subjects released", "Systems, Cloud, AI"],
-        ["25 Jun (Thu)", "Handout Day 4 — ALL 30 handouts done ✅", "Specializations"],
+        ["25 Jun (Thu)", "Handout Day 4 — ALL 30 handouts done ", "Specializations"],
         ["26–28 Jun", "Self-study + Buddy sessions + Doubt clearing", "Mentor prep"],
         ["29 Jun (Sun)", "MODULE 1 ASSESSMENT", "75-min test"],
         ["30 Jun (Mon)", "DEMO + CLASSIFICATION", "O/A/B/C finalized"],
@@ -725,9 +725,9 @@ with tab_readiness_map:
     st.dataframe(milestones_df, use_container_width=True, hide_index=True)
 
 
-# ─── Tab 5: Readiness Playbook ───
+#  Tab 5: Readiness Playbook 
 with tab_playbook:
-    st.subheader("📚 Subject Readiness Playbook")
+    st.subheader(" Subject Readiness Playbook")
     st.caption(
         "A breadth-first sweep of the entire course — what's interesting, what's boring, "
         "where to prep more, where to do roleplays. Your mentor cheat sheet."
@@ -737,7 +737,7 @@ with tab_playbook:
 
     # Show module overview
     st.markdown(f"**Course: {course_name}** — {len(modules)} Modules, {len(df)} LUs")
-    with st.expander("📦 Modules in this course", expanded=False):
+    with st.expander(" Modules in this course", expanded=False):
         for i, mod in enumerate(modules, 1):
             mod_lu_count = len(get_lus_for_module(df, mod))
             st.markdown(f"{i}. **{mod}** ({mod_lu_count} LUs)")
@@ -746,19 +746,19 @@ with tab_playbook:
 
     st.markdown("""
     **This playbook will cover:**
-    - 🔥 The interesting parts students will love
-    - 😴 The boring parts and how to fix them
-    - 📖 Topics that need extra prep (read more than once)
-    - ⚡ Quick wins that need minimal effort
-    - 🎭 Roleplay & activity opportunities
-    - 🧱 Danger zones where students struggle most
-    - 📋 Module-by-module readiness checklist
+    -  The interesting parts students will love
+    -  The boring parts and how to fix them
+    -  Topics that need extra prep (read more than once)
+    -  Quick wins that need minimal effort
+    -  Roleplay & activity opportunities
+    -  Danger zones where students struggle most
+    -  Module-by-module readiness checklist
     """)
 
     gen_col, dl_col = st.columns([2, 1])
 
     with gen_col:
-        if st.button("🚀 Generate Readiness Playbook", key="gen_playbook", type="primary", use_container_width=True):
+        if st.button(" Generate Readiness Playbook", key="gen_playbook", type="primary", use_container_width=True):
             with st.spinner(f"Generating full-course playbook for {course_name}... (this may take 30-60 seconds)"):
                 all_chunks = st.session_state.rag_engine.chunks
                 if not all_chunks:
@@ -780,7 +780,7 @@ with tab_playbook:
         # Build downloadable text
         download_text = f"# Subject Readiness Playbook\n# Course: {playbook_name}\n# Generated by Kalvium Mentor Bot\n\n{playbook_content}"
         st.download_button(
-            label="⬇️ Download Playbook (.md)",
+            label=" Download Playbook (.md)",
             data=download_text,
             file_name=f"{playbook_name.replace(' ', '_')}_Readiness_Playbook.md",
             mime="text/markdown",
@@ -788,9 +788,9 @@ with tab_playbook:
         )
 
 
-# ─── Tab 5: Chat ───
+#  Tab 5: Chat 
 with tab_chat:
-    st.subheader("💬 Ask the Mentor Bot")
+    st.subheader(" Ask the Mentor Bot")
     st.caption("Ask anything about the course. You can go back & forth for up to 5 messages per thread.")
 
     MAX_CHAT_TURNS = 5  # Max user messages per thread
@@ -799,19 +799,19 @@ with tab_chat:
     if st.session_state.chat_history:
         new_chat_col, info_col = st.columns([1, 3])
         with new_chat_col:
-            if st.button("✨ New Chat", key="new_chat_top", type="primary", use_container_width=True):
+            if st.button(" New Chat", key="new_chat_top", type="primary", use_container_width=True):
                 st.session_state.chat_history = []
                 st.rerun()
         with info_col:
             user_msg_count = sum(1 for m in st.session_state.chat_history if m["role"] == "user")
             remaining = MAX_CHAT_TURNS - user_msg_count
             if remaining > 0:
-                st.caption(f"💬 {user_msg_count}/{MAX_CHAT_TURNS} messages used · {remaining} remaining")
+                st.caption(f" {user_msg_count}/{MAX_CHAT_TURNS} messages used · {remaining} remaining")
             else:
-                st.caption(f"💬 {MAX_CHAT_TURNS}/{MAX_CHAT_TURNS} messages used · Start a new chat to continue")
+                st.caption(f" {MAX_CHAT_TURNS}/{MAX_CHAT_TURNS} messages used · Start a new chat to continue")
 
     # Context selector: Module + LU
-    st.markdown("**📍 Set Context (optional):**")
+    st.markdown("** Set Context (optional):**")
     ctx_col1, ctx_col2 = st.columns([1, 2])
     with ctx_col1:
         chat_module = st.selectbox("Module:", ["— All Modules —"] + modules, key="chat_module")
@@ -853,12 +853,12 @@ with tab_chat:
 
     # Check thread limit
     if user_msg_count >= MAX_CHAT_TURNS:
-        st.toast("🔄 Start a fresh chat! Smaller context window prevents hallucination.", icon="💡")
+        st.toast("Start a fresh chat! Smaller context window prevents hallucination.")
         st.info(
             "You've used all **5 messages** in this thread. "
-            "Start a new chat for fresh, accurate responses — smaller context = less hallucination! 🎯"
+            "Start a new chat for fresh, accurate responses — smaller context = less hallucination! "
         )
-        if st.button("✨ Start New Chat", key="new_thread", type="primary", use_container_width=True):
+        if st.button(" Start New Chat", key="new_thread", type="primary", use_container_width=True):
             st.session_state.chat_history = []
             st.rerun()
     else:
@@ -908,7 +908,7 @@ with tab_chat:
                     response = get_gemini_response(augmented_input, context_chunks, gemini_history)
                     st.markdown(response)
 
-                    with st.expander("📎 Source chunks used"):
+                    with st.expander(" Source chunks used"):
                         for i, chunk in enumerate(context_chunks, 1):
                             meta = chunk["metadata"]
                             st.caption(
@@ -922,6 +922,6 @@ with tab_chat:
             # Show toast on 4th message as a heads-up
             new_count = user_msg_count + 1
             if new_count == MAX_CHAT_TURNS - 1:
-                st.toast("⚡ 1 message left in this thread!", icon="⚠️")
+                st.toast("1 message left in this thread!")
             elif new_count >= MAX_CHAT_TURNS:
-                st.toast("🔄 Start a fresh chat! Smaller context = less hallucination.", icon="💡")
+                st.toast("Start a fresh chat! Smaller context = less hallucination.")
