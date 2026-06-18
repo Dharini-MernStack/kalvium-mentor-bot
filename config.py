@@ -1,11 +1,16 @@
 """Configuration for Kalvium Mentor RAG Bot"""
 
-# Supported courses
+# Supported courses — all 30 technical subjects for early-start campuses
 COURSES = {
     "DBMS": {
         "name": "Database Management Systems",
         "icon": "🗄️",
         "description": "Covers relational databases, SQL, normalization, transactions, indexing and more."
+    },
+    "DBMS_LAB": {
+        "name": "Database Management Systems — Lab",
+        "icon": "🗄️",
+        "description": "Hands-on lab for DBMS — SQL queries, schema design, normalization exercises."
     },
     "COA": {
         "name": "Computer Organisation & Architecture",
@@ -16,7 +21,137 @@ COURSES = {
         "name": "Operating Systems",
         "icon": "⚙️",
         "description": "Covers Linux administration, process management, file systems, networking, security."
-    }
+    },
+    "OOP": {
+        "name": "Object Oriented Programming",
+        "icon": "🧱",
+        "description": "Classes, objects, inheritance, polymorphism, abstraction, encapsulation and design patterns."
+    },
+    "OOP_LAB": {
+        "name": "Object Oriented Programming — Lab",
+        "icon": "🧱",
+        "description": "Hands-on OOP lab — coding exercises in Java/C++ with real-world modeling."
+    },
+    "DAA": {
+        "name": "Design and Analysis of Algorithms",
+        "icon": "📐",
+        "description": "Sorting, searching, graph algorithms, dynamic programming, greedy methods, complexity analysis."
+    },
+    "DAA_LAB": {
+        "name": "Design and Analysis of Algorithms — Lab",
+        "icon": "📐",
+        "description": "Hands-on algorithm implementation, time complexity benchmarking, problem-solving."
+    },
+    "ADS": {
+        "name": "Advanced Database Systems",
+        "icon": "🗃️",
+        "description": "NoSQL, distributed databases, query optimization, transactions at scale, CAP theorem."
+    },
+    "ADS_LAB": {
+        "name": "Advanced Database Systems — Lab",
+        "icon": "🗃️",
+        "description": "Hands-on lab for advanced DB — MongoDB, Redis, query tuning, replication."
+    },
+    "FLAT": {
+        "name": "Formal Language and Automata Theory",
+        "icon": "🔤",
+        "description": "Finite automata, regular expressions, context-free grammars, Turing machines, computability."
+    },
+    "FSWD": {
+        "name": "Full Stack Web Development",
+        "icon": "🌐",
+        "description": "Frontend (HTML/CSS/JS/React), backend (Node/Express), APIs, deployment, full-stack projects."
+    },
+    "FSWD_LAB": {
+        "name": "Full Stack Web Development — Lab",
+        "icon": "🌐",
+        "description": "Hands-on full-stack lab — build and deploy web applications end to end."
+    },
+    "ELEMENTS_AI": {
+        "name": "Elements of AI — Building AI",
+        "icon": "🤖",
+        "description": "AI fundamentals, search algorithms, machine learning basics, neural network concepts."
+    },
+    "ELEMENTS_AI_LAB": {
+        "name": "Elements of AI — Building AI — Lab",
+        "icon": "🤖",
+        "description": "Hands-on AI lab — implement search, train simple models, experiment with AI tools."
+    },
+    "CLOUD": {
+        "name": "Cloud Computing",
+        "icon": "☁️",
+        "description": "Cloud service models (IaaS/PaaS/SaaS), AWS/GCP basics, containers, serverless, deployment."
+    },
+    "SYSDES": {
+        "name": "System Design",
+        "icon": "🏗️",
+        "description": "Scalability, load balancing, caching, database sharding, microservices, design interviews."
+    },
+    "DEVOPS": {
+        "name": "DevOps Foundations",
+        "icon": "🔄",
+        "description": "CI/CD pipelines, Docker, Kubernetes basics, monitoring, infrastructure as code."
+    },
+    "DIST_SYS": {
+        "name": "Distributed Systems",
+        "icon": "🌍",
+        "description": "Consensus algorithms, replication, fault tolerance, distributed storage, MapReduce."
+    },
+    "DSA2": {
+        "name": "Data Structures and Algorithms — 2",
+        "icon": "🌲",
+        "description": "Advanced trees, graphs, tries, segment trees, heaps, advanced DP and competitive patterns."
+    },
+    "DSA2_LAB": {
+        "name": "Data Structures and Algorithms — 2 Lab",
+        "icon": "🌲",
+        "description": "Hands-on advanced DSA lab — contest-style problems, timed practice."
+    },
+    "LINUX": {
+        "name": "Linux Administration",
+        "icon": "🐧",
+        "description": "Shell scripting, file systems, user management, networking, process management, security."
+    },
+    "ML": {
+        "name": "Machine Learning",
+        "icon": "🧠",
+        "description": "Supervised/unsupervised learning, regression, classification, clustering, model evaluation."
+    },
+    "MALWARE": {
+        "name": "Malware Analysis",
+        "icon": "🔒",
+        "description": "Static/dynamic analysis, reverse engineering, threat detection, sandboxing, security tools."
+    },
+    "UIUX": {
+        "name": "UI and UX Design for CSE",
+        "icon": "🎨",
+        "description": "Design thinking, wireframing, prototyping, usability testing, Figma, user research."
+    },
+    "CODING_SKILLS": {
+        "name": "Coding Skills for Placements — 1",
+        "icon": "💻",
+        "description": "Arrays, strings, recursion, basic DP, sliding window — placement-focused problem solving."
+    },
+    "INTRO_DS": {
+        "name": "Introduction to Data Science",
+        "icon": "📊",
+        "description": "Data wrangling, EDA, pandas, visualization, basic statistics, storytelling with data."
+    },
+    "WORK_INT": {
+        "name": "Work Integration",
+        "icon": "🛠️",
+        "description": "Project-based learning — MERN stack project track, real-world software engineering practices."
+    },
+    "SW_SEM3": {
+        "name": "Simulated Work — Sem 3",
+        "icon": "🎮",
+        "description": "Industry-simulated project work for Semester 3 — teamwork, agile, deliverables."
+    },
+    "SW_SEM57": {
+        "name": "Simulated Work — Sem 5/7",
+        "icon": "🎮",
+        "description": "Advanced simulated work for Sem 5 & 7 — complex projects, client interaction, production code."
+    },
 }
 
 # LLD column mapping — maps expected column names to normalized keys
