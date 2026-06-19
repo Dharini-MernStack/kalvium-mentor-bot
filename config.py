@@ -164,27 +164,29 @@ COURSES = {
 COURSE_LLD_FILES = {
     "MALWARE": os.path.join(DATA_DIR, "MALWARE_lld.xlsx"),
     "COA": os.path.join(DATA_DIR, "COA_lld.xlsx"),
+    "DSA2": os.path.join(DATA_DIR, "DSA2_lld.xlsx"),
 }
 
 # LLD column mapping — maps expected column names to normalized keys
 LLD_COLUMNS = {
     "module_name":       ["Module Name", "module_name", "Module"],
     "lu_sequence":       ["LU sequence", "lu_sequence", "LU Sequence", "LU No", "LU Number"],
-    "lu_name":           ["LU Name", "lu_name", "LU Title"],
-    "slugs":             ["Slugs", "slugs", "Slug"],
+    "lu_name":           ["LU Name", "lu_name", "LU Title", "Learning Unit Name"],
+    "slugs":             ["Slugs", "slugs", "Slug", "LU Slug"],"session_type":      ["Session Type", "session_type", "Sync/Async"],
     "learning_path":     ["Learning Path", "learning_path", "Path"],
     "learning_objectives": ["Learning Objectives", "learning_objectives", "Objectives"],
     "learning_outcomes": ["Learning Outcomes", "learning_outcomes", "Outcomes"],
     "bridge_prev":       ["Bridge from Previous LU", "bridge_prev", "Bridge From"],
     "bridge_next":       ["Bridge to Next LU", "bridge_next", "Bridge To"],
     "session_flow":      ["Session Flow (45 mins)", "session_flow", "Session Flow"],
-    "fa_type":           ["FA Type", "fa_type", "Assessment Type"],
+    "fa_type":           ["FA Type", "fa_type", "Assessment Type", "Formative Assessment Type"],"course_name":       ["Name of the course", "course_name", "Course Name"],
+    "course_slug":       ["Course Slug", "course_slug"],
     "assessment_details":["Assessment Details", "assessment_details", "Assessment"],
     "references":        ["References & Resources", "references", "References"],
     "hld_mapping":       ["HLD mapping", "hld_mapping", "HLD Mapping"],
     "level_of_effort":   ["Level of effort", "level_of_effort", "Effort"],
     "note_for_authors":  ["Note for authors", "note_for_authors", "Author Notes", "Notes"],
-    "completion_status": ["Completeion status", "Completion status", "completion_status", "Status"]
+    "completion_status": ["Completeion status", "Completion status", "completion_status", "Status", "Status of publication"]
 }
 
 # Embedding model (runs locally, free)
