@@ -164,7 +164,6 @@ COURSES = {
 COURSE_LLD_FILES = {
     "MALWARE": os.path.join(DATA_DIR, "MALWARE_lld.xlsx"),
     "COA": os.path.join(DATA_DIR, "COA_lld.xlsx"),
-    "OS": os.path.join(DATA_DIR, "sample_os_lld.xlsx"),
 }
 
 # LLD column mapping — maps expected column names to normalized keys
