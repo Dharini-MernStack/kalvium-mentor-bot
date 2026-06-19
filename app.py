@@ -5,7 +5,8 @@ Helps mentors explore, understand, and improve course LLDs.
 
 import streamlit as st
 import pandas as pd
-from config import COURSES
+import os
+from config import COURSES, COURSE_LLD_FILES
 from lld_parser import parse_lld, get_modules, get_lus_for_module, lu_to_text, dataframe_to_chunks
 from rag_engine import RAGEngine
 from llm_engine import (
@@ -159,59 +160,44 @@ with st.sidebar:
 
     st.divider()
 
-    # File Upload
-    st.markdown("##  Upload LLD")
-    uploaded_file = st.file_uploader(
-        "Upload LLD spreadsheet",
-        type=["xlsx", "xls", "csv"],
-        help="Download your Google Sheet as .xlsx or .csv and upload here"
-    )
-
-    if uploaded_file:
-        try:
-            # Cache file bytes in session state to survive Streamlit reruns
-            import io
-            file_key = f"_file_{uploaded_file.name}_{uploaded_file.size}"
-            if file_key not in st.session_state:
-                uploaded_file.seek(0)
-                st.session_state[file_key] = uploaded_file.read()
-            buffered_file = io.BytesIO(st.session_state[file_key])
-            buffered_file.name = uploaded_file.name
-
-            with st.spinner("Parsing LLD..."):
-                df = parse_lld(buffered_file)
+    # Auto-load LLD status
+    if selected and selected != "__custom__":
+        lld_file = COURSE_LLD_FILES.get(selected)
+        if lld_file and os.path.exists(lld_file):
+            # Auto-load LLD if not already loaded for this course
+            if st.session_state.get("_loaded_course") != selected:
+                import io
+                with open(lld_file, "rb") as f:
+                    buf = io.BytesIO(f.read())
+                    buf.name = os.path.basename(lld_file)
+                df = parse_lld(buf)
                 st.session_state.lld_data = df
-
-                # Build RAG index
                 chunks = dataframe_to_chunks(df)
                 n_chunks = st.session_state.rag_engine.build_index(chunks)
                 st.session_state.index_built = True
+                st.session_state._loaded_course = selected
 
-            st.success(f" Parsed {len(df)} LUs  {n_chunks} chunks indexed")
-
-            # Show quick stats
+            df = st.session_state.lld_data
             modules = get_modules(df)
+            st.success(f"✅ LLD loaded — {len(df)} LUs")
             st.metric("Modules", len(modules))
             st.metric("Total LUs", len(df))
-
-            if "completion_status" in df.columns:
-                pending = df["completion_status"].astype(str).str.lower().str.contains("pending").sum()
-                done = len(df) - pending
-                st.metric("Completed", f"{done}/{len(df)}")
-
-        except Exception as e:
-            st.error(f" Error parsing file: {e}")
+        elif selected in COURSES:
+            st.info("📋 LLD coming soon for this course.")
+        else:
+            pass
 
     st.divider()
-    st.caption("Built for Kalvium L&D Team ")
+    st.caption("Built for Kalvium L&D Team 🚀")
     st.caption("Free tier: Gemini Flash + local embeddings")
+    st.caption(f"📚 {len(COURSE_LLD_FILES)} courses loaded")
 
 
 #  Header 
 st.markdown("""
 <div class="main-header">
     <h1> Kalvium Mentor Bot</h1>
-    <p>Your AI-powered course design assistant — upload an LLD, explore modules, and get actionable mentor insights.</p>
+    <p>Your AI-powered course design assistant — select a course, explore modules, and get actionable mentor insights.</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -221,28 +207,33 @@ if not st.session_state.gemini_configured:
     st.stop()
 
 if st.session_state.lld_data is None:
-    st.info(" Please **select a course** and **upload its LLD** spreadsheet in the sidebar.")
+    st.info("👈 Please **select a course** from the sidebar to get started.")
 
-    # Show placeholder with instructions
-    col1, col2, col3 = st.columns(3)
-    for col, (key, course) in zip([col1, col2, col3], COURSES.items()):
-        with col:
-            st.markdown(f"""
-            <div class="stat-box">
-                <h3>{key}</h3>
-                <p><strong>{course['name']}</strong></p>
-                <p style="font-size:0.8rem; color:#999;">{course['description']}</p>
-            </div>
-            """, unsafe_allow_html=True)
+    # Show available courses with LLD status
+    ready_courses = {k: v for k, v in COURSES.items() if k in COURSE_LLD_FILES and os.path.exists(COURSE_LLD_FILES.get(k, ""))}
+    coming_soon = {k: v for k, v in COURSES.items() if k not in ready_courses}
+
+    if ready_courses:
+        st.markdown("### ✅ Courses Ready")
+        cols = st.columns(min(len(ready_courses), 4))
+        for i, (key, course) in enumerate(list(ready_courses.items())[:4]):
+            with cols[i]:
+                st.markdown(f"""
+                <div class="stat-box">
+                    <h3>{course.get('icon', '📚')} {key}</h3>
+                    <p><strong>{course['name']}</strong></p>
+                    <p style="font-size:0.8rem; color:#999;">{course['description']}</p>
+                </div>
+                """, unsafe_allow_html=True)
 
     st.markdown("---")
     st.markdown("""
-    ###  How to use:
+    ### 🚀 How to use:
     1. **Get a free Gemini API key** from [Google AI Studio](https://aistudio.google.com/apikey)
     2. **Select a course** from the sidebar
-    3. **Download your LLD** Google Sheet as `.xlsx`
-    4. **Upload it** using the file uploader
-    5. **Explore** modules, LUs, and chat with the bot!
+    3. **Explore** modules, LUs, and chat with the bot!
+    
+    > 💡 All course LLDs are pre-loaded — no upload needed!
     """)
     st.stop()
 

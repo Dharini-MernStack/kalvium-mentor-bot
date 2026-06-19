@@ -47,9 +47,13 @@ streamlit run app.py
 
 ### 4. Use it
 1. Paste your Gemini API key in the sidebar
-2. Select a course (DBMS / COA / OS)
-3. Upload the course LLD as `.xlsx` or `.csv`
-4. Explore the tabs!
+2. Select a course (e.g., Malware Analysis, COA, OS)
+3. Explore the tabs — LLD is auto-loaded!
+
+### Adding new course LLDs
+1. Place the `.xlsx` file in `data/` (e.g., `data/DBMS_lld.xlsx`)
+2. Add the mapping in `config.py` under `COURSE_LLD_FILES`
+3. Deploy!
 
 ## 📄 LLD Format Expected
 

@@ -3,5 +3,7 @@ __pycache__/
 .env
 .streamlit/secrets.toml
 *.xlsx
+!data/*_lld.xlsx
+!data/sample_os_lld.xlsx
 Kalvium_Mentor_Bot_Briefing.*
 generate_briefing_docx.py

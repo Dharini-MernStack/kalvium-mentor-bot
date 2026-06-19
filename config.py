@@ -1,5 +1,9 @@
 """Configuration for Kalvium Mentor RAG Bot"""
 
+import os
+
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+
 # Supported courses — all 30 technical subjects for early-start campuses
 COURSES = {
     "DBMS": {
@@ -152,6 +156,15 @@ COURSES = {
         "icon": "",
         "description": "Advanced simulated work for Sem 5 & 7 — complex projects, client interaction, production code."
     },
+}
+
+# ─── Course → LLD file mapping (hardcoded backend data) ───
+# Only courses with a file entry here will show as "ready" to mentors.
+# Add new courses by placing the .xlsx in data/ and adding the key here.
+COURSE_LLD_FILES = {
+    "MALWARE": os.path.join(DATA_DIR, "MALWARE_lld.xlsx"),
+    "COA": os.path.join(DATA_DIR, "COA_lld.xlsx"),
+    "OS": os.path.join(DATA_DIR, "sample_os_lld.xlsx"),
 }
 
 # LLD column mapping — maps expected column names to normalized keys
